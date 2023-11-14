@@ -2,6 +2,9 @@
 
 namespace MatrixMultiplication;
 
+/// <summary>
+/// class that implements a matrix data structure
+/// </summary>
 public class Matrix
 {
     private readonly int[,] data;
@@ -57,6 +60,12 @@ public class Matrix
         }
     }
 
+    /// <summary>
+    /// multiplies matrix by another matrix without additional threads
+    /// </summary>
+    /// <param name="other">matrix to multiply by</param>
+    /// <returns>result of multiplication</returns>
+    /// <exception cref="InvalidOperationException">thrown if multiplication is not defined for given matrices</exception>
     public Matrix MultiplyBy(Matrix other)
     {
         if (this.Columns != other.Rows)
@@ -75,6 +84,12 @@ public class Matrix
         return new Matrix(result);
     }
 
+    /// <summary>
+    /// multiplies matrix by another matrix using multiple threads
+    /// </summary>
+    /// <param name="other">matrix to multiply by</param>
+    /// <returns>result of multiplication</returns>
+    /// <exception cref="InvalidOperationException">thrown if multiplication is not defined for given matrices</exception>
     public Matrix ParalleledMultiplyBy(Matrix other)
     {
         if (this.Columns != other.Rows)
@@ -121,6 +136,10 @@ public class Matrix
         return new Matrix(result);
     }
 
+    /// <summary>
+    /// writes matrix to file
+    /// </summary>
+    /// <param name="path">path to file to write the matrix to</param>
     public void WriteToFile(string path)
     {
         using var streamWriter = new StreamWriter(path);
@@ -136,6 +155,12 @@ public class Matrix
         }
     }
 
+    /// <summary>
+    /// generates matrix of random matrices of given size
+    /// </summary>
+    /// <param name="rows">number of rows</param>
+    /// <param name="columns">number of columns</param>
+    /// <returns>random matrix with given numbers of rows and columns</returns>
     public static Matrix GenerateRandomMatrix(int rows, int columns)
     {
         int[,] data = new int[rows, columns];
@@ -149,12 +174,13 @@ public class Matrix
         return new Matrix(data);
     }
 
-    public override bool Equals(object? obj)
+    /// <summary>
+    /// checks if two matrices are equal
+    /// </summary>
+    /// <param name="other">matrix to compare to</param>
+    /// <returns>true if matrices are equal, false otherwise</returns>
+    public bool IsEqualTo(Matrix other)
     {
-        if (obj == null || 
-            obj is not Matrix)
-            return false;
-        var other = (Matrix)obj;
         if (Rows != other.Rows || Columns != other.Columns)
             return false;
         for (int i = 0; i < Rows; i++)

@@ -6,8 +6,8 @@ public class Tests
     {
         var singleTreadResult = leftMatrix.MultiplyBy(rightMatrix);
         var multiTreadResult = leftMatrix.ParalleledMultiplyBy(rightMatrix);
-        Assert.That(expectedResult.Equals(singleTreadResult), Is.True);
-        Assert.That(expectedResult.Equals(multiTreadResult), Is.True);
+        Assert.That(expectedResult.IsEqualTo(singleTreadResult), Is.True);
+        Assert.That(expectedResult.IsEqualTo(multiTreadResult), Is.True);
     }
 
     [Test]
@@ -61,7 +61,7 @@ public class Tests
         var rightMatrix = new Matrix("../../../BigMatrix.txt");
         var singleThreadResult = leftMatrix.MultiplyBy(rightMatrix);
         var multiThreadResult = leftMatrix.ParalleledMultiplyBy(rightMatrix);
-        Assert.That(singleThreadResult.Equals(multiThreadResult));
+        Assert.That(singleThreadResult.IsEqualTo(multiThreadResult));
     }
 
     [Test]
@@ -92,7 +92,7 @@ public class Tests
             { 5, 6, 7, 8 },
             { 4, 3, 2, 1 }
         });
-        Assert.That(matrix.Equals(expected), Is.True);
+        Assert.That(matrix.IsEqualTo(expected), Is.True);
     }
 
     [TestCase("../../../EmptyMatrix.txt")]
