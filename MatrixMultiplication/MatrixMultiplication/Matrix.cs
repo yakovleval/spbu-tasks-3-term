@@ -1,14 +1,17 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace MatrixMultiplication;
 
-internal class Matrix
+public class Matrix
 {
-    private int[,] data;
+    private readonly int[,] data;
 
     public int Rows => data.GetLength(0);
 
     public int Columns => data.GetLength(1);
+
+    private static Random rand = new();
 
     public Matrix(string path)
     {
@@ -33,7 +36,7 @@ internal class Matrix
                 throw new FormatException("rows must contain only numbers");
             string[] intsInStrings = line.Split();
             if (intsInStrings.Length != columns)
-                throw new FormatException($"length of row {i} is not equal to stated number of columns");
+                throw new FormatException($"length of {i}th row ({intsInStrings.Length}) is not equal to stated number of columns ({columns})");
             for (int j = 0; j < intsInStrings.Length; j++)
             {
                 data[i, j] = int.Parse(intsInStrings[j]);
@@ -43,10 +46,19 @@ internal class Matrix
 
     public Matrix(int[,] data)
     {
-        this.data = (int[,])data.Clone();
+        int rows = data.GetLength(0);
+        int columns = data.GetLength(1);
+        this.data = new int[rows, columns];
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                this.data[i, j] = data[i, j];
+            }
+        }
     }
 
-    public Matrix Multiply(Matrix other)
+    public Matrix MultiplyBy(Matrix other)
     {
         if (this.Columns != other.Rows)
             throw new InvalidOperationException("matrices' dimensions are not compliant for multiplication");
@@ -62,5 +74,98 @@ internal class Matrix
             }
         }
         return new Matrix(result);
+    }
+
+    public Matrix ParalleledMultiplyBy(Matrix other)
+    {
+        if (this.Columns != other.Rows)
+            throw new InvalidOperationException("matrices' dimensions are not compliant for multiplication");
+        int[,] result = new int[this.Rows, other.Columns];
+        int threadsNumber = Math.Min(Environment.ProcessorCount, other.Columns);
+        int chunkSize = other.Columns / threadsNumber;
+        int remainder = other.Columns % threadsNumber;
+        Thread[] threads = new Thread[threadsNumber];
+        for (int i = 0; i < threadsNumber; i++)
+        {
+            int localI = i;
+            int startColumn;
+            int endColumn;
+            if (localI < remainder)
+            {
+                startColumn = (chunkSize + 1) * localI;
+                endColumn = startColumn + chunkSize + 1;
+            }
+            else
+            {
+                startColumn = (chunkSize + 1) * remainder + chunkSize * (localI - remainder);
+                endColumn = startColumn + chunkSize;
+            }
+            threads[i] = new Thread(() =>
+            {
+                for (int n = 0; n < this.Rows; n++)
+                {
+                    for (int m = startColumn; m < endColumn; m++)
+                    {
+                        for (int k = 0; k < this.Columns; k++)
+                        {
+                            result[n, m] += this.data[n, k] * other.data[k, m];
+                        }
+                    }
+                }
+            });
+            threads[i].Start();
+        }
+        for (int i = 0; i < threadsNumber; i++)
+        {
+            threads[i].Join();
+        }
+        return new Matrix(result);
+    }
+
+    public void WriteToFile(string path)
+    {
+        using var streamWriter = new StreamWriter(path);
+        streamWriter.WriteLine($"{Rows} {Columns}");
+        for (int i = 0; i < Rows; i++)
+        {
+            for (int j = 0; j < Columns - 1; j++)
+            {
+                streamWriter.Write(data[i, j]);
+                streamWriter.Write(" ");
+            }
+            streamWriter.WriteLine(data[i, Columns - 1]);
+        }
+    }
+
+    public static Matrix GenerateRandomMatrix(int rows, int columns)
+    {
+        int[,] data = new int[rows, columns];
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                data[i, j] = rand.Next(100);
+            }
+        }
+        return new Matrix(data);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj == null || 
+            obj is not Matrix)
+            return false;
+        var other = (Matrix)obj;
+        if (Rows != other.Rows || Columns != other.Columns)
+            return false;
+        for (int i = 0; i < Rows; i++)
+        {
+            for (int j = 0; j < Columns; j++)
+            {
+                if (data[i, j] != other.data[i, j])
+                    return false;
+            }
+        }
+        return true;
     }
 }
