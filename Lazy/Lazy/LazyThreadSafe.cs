@@ -4,8 +4,8 @@ public class LazyThreadSafe<T> : ILazy<T>
 {
     Func<T?> supplier;
     T? result;
-    Exception? exception;
-    bool isEvaluated = false;
+    volatile Exception? exception;
+    volatile bool isEvaluated = false;
     private readonly object locker = new();
     public LazyThreadSafe(Func<T?> supplier)
     {
