@@ -1,5 +1,9 @@
 ﻿namespace Lazy;
 
+/// <summary>
+/// class that implements ILazy interface without thread safety
+/// </summary>
+/// <typeparam name="T">type of returned value</typeparam>
 public class Lazy<T> : ILazy<T>
 {
     private readonly Func<T?>? supplier;
@@ -12,6 +16,10 @@ public class Lazy<T> : ILazy<T>
         this.supplier = supplier;
     }
 
+    /// <summary>
+    /// computes the value if it wasn't computed before and stores it
+    /// </summary>
+    /// <returns>computed value of type T</returns>
     public T? Get()
     {
         if (isEvaluated)
