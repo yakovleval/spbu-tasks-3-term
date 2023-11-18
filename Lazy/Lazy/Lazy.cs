@@ -2,13 +2,13 @@
 
 public class Lazy<T> : ILazy<T>
 {
-    Func<T?> supplier;
-    T? result;
-    Exception? exception;
-    bool isEvaluated = false;
-    public Lazy(Func<T?> supplier)
+    private readonly Func<T?>? supplier;
+    private T? result;
+    private Exception? exception;
+    private bool isEvaluated = false;
+
+    public Lazy(Func<T?>? supplier)
     {
-        ArgumentNullException.ThrowIfNull(supplier);
         this.supplier = supplier;
     }
 
@@ -23,7 +23,7 @@ public class Lazy<T> : ILazy<T>
         isEvaluated = true;
         try
         {
-            result = supplier();
+            result = supplier!();
         }
         catch (Exception e)
         {

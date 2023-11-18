@@ -2,14 +2,14 @@
 
 public class LazyThreadSafe<T> : ILazy<T>
 {
-    Func<T?> supplier;
-    T? result;
-    volatile Exception? exception;
-    volatile bool isEvaluated = false;
+    private readonly Func<T?>? supplier;
+    private T? result;
+    private volatile Exception? exception;
+    private volatile bool isEvaluated = false;
     private readonly object locker = new();
+
     public LazyThreadSafe(Func<T?> supplier)
     {
-        ArgumentNullException.ThrowIfNull(supplier);
         this.supplier = supplier;
     }
 
@@ -21,7 +21,7 @@ public class LazyThreadSafe<T> : ILazy<T>
                 throw exception;
             return result;
         }
-        lock (locker)
+        //lock (locker)
         {
             if (isEvaluated)
             {
@@ -29,17 +29,20 @@ public class LazyThreadSafe<T> : ILazy<T>
                     throw exception;
                 return result;
             }
-            isEvaluated = true;
-        try
-        {
-            result = supplier();
+            try
+            {
+                result = supplier!();
+            }
+            catch (Exception e)
+            {
+                exception = e;
+                throw;
+            }
+            finally
+            {
+                isEvaluated = true;
+            }
+            return result;
         }
-        catch (Exception e)
-        {
-            exception = e;
-            throw;
-        }
-        return result;
-    }
-        }
+     }
 }
