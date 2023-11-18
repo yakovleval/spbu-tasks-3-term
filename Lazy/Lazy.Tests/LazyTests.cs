@@ -1,11 +1,12 @@
 using NUnit.Framework.Constraints;
+using System.ComponentModel.DataAnnotations;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Lazy.Tests;
 
 public class Tests
 {
-    private static readonly Random rnd = new Random();
+    private static readonly Random rnd = new();
 
     [Test]
     public void TestRaceCondition()
@@ -78,18 +79,37 @@ public class Tests
         }
     }
 
-    private static IEnumerable<TestCaseData> LazyWithRandoms() 
-        => new TestCaseData[]
-        {
-            new TestCaseData(new Lazy<int>(() => rnd.Next())),
-            new TestCaseData(new LazyThreadSafe<int>(() => rnd.Next()))
-        };
-
-    [TestCaseSource(nameof(LazyWithRandoms))]
-    public void TestLazyCalculation(ILazy<int> lazy)
+    [Test]
+    public void TestLazyCalculation()
     {
+        var lazy = new Lazy<int>(() => rnd.Next());
         var value = lazy.Get();
         Assert.That(lazy.Get(), Is.EqualTo(value));
+    }
+
+    [Test]
+    public void TestLazyCalculationWIthException()
+    {
+        var lazy = new Lazy<int>(() => throw new Exception($"{rnd.Next()}"));
+        var result1 = -1;
+        var result2 = 1;
+        try
+        {
+            lazy.Get();
+        }
+        catch (Exception e)
+        {
+            result1 = int.Parse(e.Message);
+        }
+        try
+        {
+            lazy.Get();
+        }
+        catch (Exception e)
+        {
+            result2 = int.Parse(e.Message);
+        }
+        Assert.That(result1, Is.EqualTo(result2));
     }
 
     private static IEnumerable<TestCaseData> LazyWithNulls

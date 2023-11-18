@@ -12,7 +12,7 @@ public class LazyThreadSafe<T> : ILazy<T>
     private volatile bool isEvaluated = false;
     private readonly object locker = new();
 
-    public LazyThreadSafe(Func<T?> supplier)
+    public LazyThreadSafe(Func<T?>? supplier)
     {
         this.supplier = supplier;
     }
@@ -29,7 +29,7 @@ public class LazyThreadSafe<T> : ILazy<T>
                 throw exception;
             return result;
         }
-        //lock (locker)
+        lock (locker)
         {
             if (isEvaluated)
             {
