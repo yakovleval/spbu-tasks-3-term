@@ -1,6 +1,6 @@
 ﻿namespace MyThreadPool;
 
-public class MyThreadPool
+public class Class1
 {
 
 }
