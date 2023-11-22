@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace MyThreadPool;
 
+/// <summary>
+/// Represents a simple thread pool for running tasks
+/// </summary>
 public class MyThreadPool
 {
     private readonly ConcurrentQueue<Action> _tasksQueue = new();
@@ -16,6 +16,10 @@ public class MyThreadPool
     private int _workingThreadsNumber = 0;
     public int WorkingThreadsNumber => _workingThreadsNumber;
 
+    /// <summary>
+    /// initializes thread pool with given number of threads
+    /// </summary>
+    /// <param name="threadsNumber">number of threads to be run in thread pool</param>
     public MyThreadPool(int threadsNumber)
     {
         _events = new WaitHandle[]
@@ -73,6 +77,9 @@ public class MyThreadPool
         }
     }
 
+    /// <summary>
+    /// shuts down thread pool, submitted tasks are not interrupted
+    /// </summary>
     public void ShutDown()
     {
         lock (_source)
@@ -86,6 +93,13 @@ public class MyThreadPool
         }
     }
 
+    /// <summary>
+    /// submits a task to a thread pool
+    /// </summary>
+    /// <typeparam name="TResult">type of return value of a supplier</typeparam>
+    /// <param name="supplier">function to run</param>
+    /// <returns></returns>
+    /// <exception cref="ThreadPoolShutDownException">thrown when trying to submit a task when thread pool is shut down</exception>
     public IMyTask<TResult> Submit<TResult>(Func<TResult> supplier)
     {
         lock (_source)
