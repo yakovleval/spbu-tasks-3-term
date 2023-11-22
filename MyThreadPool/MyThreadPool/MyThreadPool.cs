@@ -13,7 +13,7 @@ public class MyThreadPool
     private readonly  WaitHandle[] _events;
     private readonly Thread[] _threads;
     private readonly CancellationTokenSource _source = new();
-    private volatile int _workingThreadsNumber = 0;
+    private int _workingThreadsNumber = 0;
     public int WorkingThreadsNumber => _workingThreadsNumber;
 
     public MyThreadPool(int threadsNumber)
@@ -42,9 +42,9 @@ public class MyThreadPool
                     }
                     if (task != null)
                     {
-                        _workingThreadsNumber++;
+                        Interlocked.Increment(ref _workingThreadsNumber);
                         task();
-                        _workingThreadsNumber--;
+                        Interlocked.Decrement(ref _workingThreadsNumber);
                     }
                     lock (_tasksQueue)
                     {
@@ -63,7 +63,9 @@ public class MyThreadPool
                     }
                     else if (task != null)
                     {
+                        Interlocked.Increment(ref _workingThreadsNumber);
                         task();
+                        Interlocked.Decrement(ref _workingThreadsNumber);
                     }
                 }
             });

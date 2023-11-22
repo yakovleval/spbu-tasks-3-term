@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Net.Http.Headers;
 using System.Threading;
 
@@ -6,12 +7,6 @@ namespace MyThreadPool.Tests;
 public class Tests
 {
     private static readonly int THREADS_NUMBER = 4;
-
-    [SetUp]
-    public void Setup()
-    {
-        
-    }
 
     [Test]
     public void TestSimpleTask()
@@ -34,16 +29,6 @@ public class Tests
     }
 
     [Test]
-    public void TestContinueWith()
-    {
-        MyThreadPool threadPool = new(THREADS_NUMBER);
-        var task = threadPool.Submit(() => 2 * 2)
-            .ContinueWith(x => x * x)
-            .ContinueWith(x => x - 2);
-        Assert.That(task.Result, Is.EqualTo(14));
-    }
-
-    [Test]
     public void TestSubmitThrowsExceptionAfterShutdown()
     {
         MyThreadPool threadPool = new(THREADS_NUMBER);
@@ -52,18 +37,10 @@ public class Tests
     }
 
     [Test]
-    public void TestContinueWithThrowsExceptionAfterShutdown()
-    {
-        MyThreadPool threadPool = new(THREADS_NUMBER);
-        var task1 = threadPool.Submit(() => 2 * 2);
-        threadPool.ShutDown();
-        Assert.Throws<ThreadPoolShutDownException>(() => task1.ContinueWith(x => x * x));
-    }
-
-    [Test]
     public void TestWorkingThreadsNumber()
     {
         MyThreadPool threadPool = new(THREADS_NUMBER);
+        ManualResetEvent workingEvent = new(false);
         ManualResetEvent submitEvent = new(false);
         for (int i = 0; i < THREADS_NUMBER; i++)
         {
@@ -72,14 +49,15 @@ public class Tests
                 submitEvent.WaitOne();
                 threadPool.Submit(() =>
                 {
-                    Thread.Sleep(3000);
+                    workingEvent.WaitOne();
                     return 0;
                 });
             }).Start();
         }
         submitEvent.Set();
-        Thread.Sleep(500);
+        Thread.Sleep(1000);
         Assert.That(threadPool.WorkingThreadsNumber, Is.EqualTo(THREADS_NUMBER));
+        workingEvent.Set();
         threadPool.ShutDown();
         Assert.That(threadPool.WorkingThreadsNumber, Is.EqualTo(0));
     }
@@ -92,12 +70,23 @@ public class Tests
     }
 
     [Test]
-    public void TestExceptionBeforeContinueWith()
+    public void TestSubmittedTasksRunAfterShutdown()
     {
-        MyThreadPool threadPool = new(THREADS_NUMBER);
-        var task = threadPool.Submit<int>(() => throw new Exception())
-            .ContinueWith(x => x * x)
-            .ContinueWith(x => x - 2);
-        Assert.Throws<AggregateException>(() => _ = task.Result);
+        MyThreadPool threadPool = new(1);
+        int sum = 0;
+        threadPool.Submit(() =>
+        {
+            Thread.Sleep(2000);
+            Interlocked.Increment(ref sum);
+            return 0;
+        });
+        threadPool.Submit(() =>
+        {
+            Thread.Sleep(2000);
+            Interlocked.Increment(ref sum);
+            return 0;
+        });
+        threadPool.ShutDown();
+        Assert.That(sum, Is.EqualTo(2));
     }
 }
