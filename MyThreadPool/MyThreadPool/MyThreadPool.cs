@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace MyThreadPool;
@@ -13,6 +14,7 @@ public class MyThreadPool
     private readonly Thread[] _threads;
     private readonly CancellationTokenSource _source = new();
     private volatile int _workingThreadsNumber = 0;
+    public int WorkingThreadsNumber => _workingThreadsNumber;
 
     public MyThreadPool(int threadsNumber)
     {
@@ -27,9 +29,18 @@ public class MyThreadPool
             _threads[i] = new Thread(() =>
             {
                 WaitHandle.WaitAny(_events);
-                while (!_source.IsCancellationRequested)
+                while (true)
                 {
-                    if (_tasksQueue.TryDequeue(out Action? task) && task != null)
+                    Action? task;
+                    lock (_source)
+                    {
+                        if (_source.IsCancellationRequested)
+                        {
+                            break;
+                        }
+                        _tasksQueue.TryDequeue(out task);
+                    }
+                    if (task != null)
                     {
                         _workingThreadsNumber++;
                         task();
@@ -38,19 +49,21 @@ public class MyThreadPool
                     lock (_tasksQueue)
                     {
                         if (_tasksQueue.IsEmpty)
+                        {
                             _queueIsNotEmptyEvent.Reset();
+                        }
                     }
                     WaitHandle.WaitAny(_events);
                 }
                 while (!_tasksQueue.IsEmpty)
                 {
                     if (!_tasksQueue.TryDequeue(out Action? task))
+                    {
                         break;
+                    }
                     else if (task != null)
                     {
-                        _workingThreadsNumber++;
                         task();
-                        _workingThreadsNumber--;
                     }
                 }
             });
@@ -61,10 +74,14 @@ public class MyThreadPool
     public void ShutDown()
     {
         lock (_source)
+        {
             _source.Cancel();
-        _shutDownEvent.Set();
+            _shutDownEvent.Set();
+        }
         for (int i = 0; i < _threads.Length; i++)
+        {
             _threads[i].Join();
+        }
     }
 
     public IMyTask<TResult> Submit<TResult>(Func<TResult> supplier)
@@ -72,10 +89,21 @@ public class MyThreadPool
         lock (_source)
         {
             if (_source.IsCancellationRequested)
-                throw new InvalidOperationException("thread was shut down");
+            {
+                throw new ThreadPoolShutDownException();
+            }
             var task = new MyTask<TResult>(this, supplier);
-            _tasksQueue.Enqueue(() => task.Run());
+            SubmitAction(task.Run);
             return task;
+        }
+    }
+
+    private void SubmitAction(Action action)
+    {
+        lock (_tasksQueue)
+        {
+            _tasksQueue.Enqueue(action);
+            _queueIsNotEmptyEvent.Set();
         }
     }
 
@@ -84,9 +112,11 @@ public class MyThreadPool
         private TResult? _result;
         private readonly Func<TResult> _supplier;
         private Exception? _exception;
-        Action? _nextAction;
+        Queue<Action> _nextActions = new();
         private readonly MyThreadPool _threadPool;
         private readonly ManualResetEvent _resultEvent = new(false);
+        private readonly object _actionReadySyncObj = new();
+
         public bool IsCompleted { get; private set; }
 
         public TResult? Result
@@ -95,7 +125,9 @@ public class MyThreadPool
             {
                 _resultEvent.WaitOne();
                 if (_exception != null)
+                {
                     throw new AggregateException(_exception);
+                }
                 return _result;
             }
         }
@@ -108,7 +140,7 @@ public class MyThreadPool
 
         public void Run()
         {
-            try
+            try 
             {
                 _result = _supplier();
             }
@@ -119,12 +151,16 @@ public class MyThreadPool
             }
             finally
             {
-                IsCompleted = true;
-                if (_nextAction != null)
+                lock (_actionReadySyncObj)
                 {
-                    _threadPool._tasksQueue.Enqueue(_nextAction);
+                    IsCompleted = true;
+                    _resultEvent.Set();
+                    while (_nextActions.Count > 0)
+                    {
+                        _threadPool.SubmitAction(_nextActions.Dequeue());
+                    }
+                    
                 }
-                _resultEvent.Set();
             }
         }
 
@@ -134,10 +170,20 @@ public class MyThreadPool
             {
                 if (_threadPool._source.IsCancellationRequested)
                 {
-                    throw new InvalidOperationException("thread was shut down");
+                    throw new ThreadPoolShutDownException();
                 }
                 var task = new MyTask<TNewResult>(_threadPool, () => continuation(Result));
-                _nextAction = () => task.Run();
+                lock (_actionReadySyncObj)
+                {
+                    if (IsCompleted)
+                    {
+                        _threadPool.SubmitAction(task.Run);
+                    }
+                    else
+                    {
+                        _nextActions.Enqueue(task.Run);
+                    }
+                }
                 return task;
             }
         }
