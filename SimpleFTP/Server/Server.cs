@@ -8,14 +8,14 @@ public class Server
 {
     private static readonly string IP = "localhost";
     private static readonly int PORT = 8888;
-    private readonly TcpListener listener = new(IPAddress.Any, PORT);
+    private readonly TcpListener _listener = new(IPAddress.Any, PORT);
 
-    public async Task Start()
+    public async Task StartAsync()
     {
-        listener.Start();
+        _listener.Start();
         while (true)
         {
-            var client = await listener.AcceptTcpClientAsync();
+            var client = await _listener.AcceptTcpClientAsync();
             ClientHander(client.GetStream());
         }
     }
