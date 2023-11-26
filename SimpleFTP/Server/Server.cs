@@ -18,40 +18,43 @@ public class Server
         {
             var client = await _listener.AcceptTcpClientAsync();
             await Console.Out.WriteLineAsync("new client");
-            ClientHander(client.GetStream());
+            //ClientHander(client);
+            _ = Task.Run(async () => await ClientHanderAsync(client));
         }
     }
 
-    private void ClientHander(NetworkStream stream)
+    private async Task ClientHanderAsync(TcpClient client)
     {
-        Task.Run(async () =>
+        using var stream = client.GetStream();
+        using var reader = new StreamReader(stream);
+        using var writer = new StreamWriter(stream) { AutoFlush = true };
+        while (client.Connected)
         {
-            using var reader = new StreamReader(stream);
-            using var writer = new StreamWriter(stream) { AutoFlush = true };
             var line = await reader.ReadLineAsync();
             var splittedLine = line?.Split(" ");
             if (splittedLine is null || splittedLine.Length != 2)
             {
                 await writer.WriteLineAsync("incorrect request");
-                return;
+                continue;
             }
             var (request, path) = (splittedLine[0], splittedLine[1]);
             switch (request)
             {
                 case "1":
-                    ListRequestHandlerAsync(path, writer);
+                    await ListRequestHandlerAsync(path, writer);
                     break;
                 case "2":
-                    GetRequestHandlerAsync(path, writer);
+                    await GetRequestHandlerAsync(path, writer);
                     break;
                 default:
                     await writer.WriteLineAsync("unknown request");
                     break;
             }
-        });
+        }
+
     }
 
-    private async void ListRequestHandlerAsync(string path, StreamWriter writer)
+    private async Task ListRequestHandlerAsync(string path, StreamWriter writer)
     {
         if (!Directory.Exists(path))
         {
@@ -73,7 +76,7 @@ public class Server
         await writer.WriteLineAsync(stringBuilder.ToString());
     }
 
-    private async void GetRequestHandlerAsync(string path, StreamWriter writer)
+    private async Task GetRequestHandlerAsync(string path, StreamWriter writer)
     {
         if (!File.Exists(path))
         {

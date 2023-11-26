@@ -8,12 +8,13 @@ public class Client
     private static readonly string IP = "localhost";
     private static readonly int PORT = 8888;
     private readonly TcpClient _client = new(IP, PORT);
+    private readonly NetworkStream stream;
     private readonly StreamReader reader;
     private readonly StreamWriter writer;
 
     public Client()
     {
-        var stream = _client.GetStream();
+        stream = _client.GetStream();
         reader = new StreamReader(stream);
         writer = new StreamWriter(stream) { AutoFlush = true };
 
@@ -34,9 +35,9 @@ public class Client
         }
     }
 
-    private async Task<string> SendRequestAsync(string request)
+    private async Task<string?> SendRequestAsync(string request)
     {
         await writer.WriteLineAsync(request);
-        return await reader.ReadToEndAsync();
+        return await reader.ReadLineAsync();
     }
 }
