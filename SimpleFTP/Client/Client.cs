@@ -15,11 +15,11 @@ public class Client
     {
         var stream = _client.GetStream();
         reader = new StreamReader(stream);
-        writer = new StreamWriter(stream);
+        writer = new StreamWriter(stream) { AutoFlush = true };
 
     }
 
-    public async void StartAsync()
+    public async Task StartAsync()
     {
         while (true)
         {

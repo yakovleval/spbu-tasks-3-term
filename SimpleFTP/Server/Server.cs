@@ -13,9 +13,11 @@ public class Server
     public async Task StartAsync()
     {
         _listener.Start();
+        await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
         while (true)
         {
             var client = await _listener.AcceptTcpClientAsync();
+            await Console.Out.WriteLineAsync("new client");
             ClientHander(client.GetStream());
         }
     }
@@ -25,7 +27,7 @@ public class Server
         Task.Run(async () =>
         {
             using var reader = new StreamReader(stream);
-            using var writer = new StreamWriter(stream);
+            using var writer = new StreamWriter(stream) { AutoFlush = true };
             var line = await reader.ReadLineAsync();
             var splittedLine = line?.Split(" ");
             if (splittedLine is null || splittedLine.Length != 2)
