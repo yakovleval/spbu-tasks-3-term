@@ -8,6 +8,7 @@ namespace Server;
 public class Server
 {
     private readonly TcpListener _listener;
+    private readonly CancellationTokenSource _source = new();
 
     public Server(IPAddress ip, int port)
     {
@@ -16,17 +17,30 @@ public class Server
 
     public async Task StartAsync()
     {
-        _listener.Start();
-        await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
-        while (true)
+        try
         {
-            var client = await _listener.AcceptTcpClientAsync();
-            await Console.Out.WriteLineAsync("client connected");
-            _ = Task.Run(async () => await ClientHanderAsync(client));
+            _listener.Start();
+            await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
+            while (true)
+            {
+                var client = await _listener.AcceptTcpClientAsync(_source.Token);
+                await Console.Out.WriteLineAsync("client connected");
+                _ = Task.Run(async () => await ClientHanderAsync(client));
+            }
+        }
+        finally
+        {
+            _listener.Stop();
+            await Console.Out.WriteLineAsync("server stopped");
         }
     }
 
-    private static async Task ClientHanderAsync(TcpClient client)
+    public void Stop()
+    {
+        _source.Cancel();
+    }
+
+    private async Task ClientHanderAsync(TcpClient client)
     {
         using var stream = client.GetStream();
         using var reader = new StreamReader(client.GetStream());
@@ -35,7 +49,7 @@ public class Server
         {
             while (client.Connected)
             {
-                var line = await reader.ReadLineAsync();
+                var line = await reader.ReadLineAsync(_source.Token);
                 if (line is null || !Regex.IsMatch(line, @"[12] [a-zA-Z_0-9.\/]+"))
                 {
                     continue;
@@ -56,7 +70,7 @@ public class Server
                 }
             }
         }
-        finally
+        catch
         {
             await Console.Out.WriteLineAsync("client disconnected");
             client.Dispose();

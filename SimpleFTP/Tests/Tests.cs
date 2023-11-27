@@ -9,7 +9,7 @@ namespace Tests
         private static readonly string IP = "127.0.0.1";
         private static readonly int PORT = 8888;
 
-        [SetUp]
+        [OneTimeSetUp]
         public void SetUp()
         {
             server = new(IPAddress.Parse(IP), PORT);
@@ -17,10 +17,10 @@ namespace Tests
             client = new(IP, PORT);
         }
 
-        [TearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
-            //server.Stop();
+            server.Stop();
             client.Dispose();
         }
 
