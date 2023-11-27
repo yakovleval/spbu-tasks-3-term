@@ -5,15 +5,15 @@ namespace Tests
 {
     public class Tests
     {
-        private Server.Server server;
+        private Server.Server server = new (IPAddress.Any, PORT);
         private Client.Client client;
         private static readonly int PORT = 8888;
 
         [OneTimeSetUp]
         public void SetUp()
         {
-            server = new(IPAddress.Any, PORT);
             Task.Run(() => server.StartAsync());
+            Thread.Sleep(1000);
             client = new(IPAddress.Loopback.ToString(), PORT);
         }
 
