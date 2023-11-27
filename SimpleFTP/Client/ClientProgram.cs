@@ -39,11 +39,11 @@ while (true)
         continue;
     }
     var command = request.Split(" ")[0];
-    var givenPath = request.Split(" ")[1];
     if (request[0] == '0')
     {
         return;
     }
+    var givenPath = request.Split(" ")[1];
     switch (command)
     {
         case "0":
