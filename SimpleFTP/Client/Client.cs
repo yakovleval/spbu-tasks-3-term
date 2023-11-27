@@ -1,14 +1,21 @@
-﻿using System.Net;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 
 namespace Client;
 
+/// <summary>
+/// represents a simple FTP client
+/// </summary>
 public class Client : IDisposable
 {
     private readonly TcpClient _client;
     private readonly StreamReader _reader;
     private readonly StreamWriter _writer;
 
+    /// <summary>
+    /// initializes a new instance of Client that connects to the specified ip address and port
+    /// </summary>
+    /// <param name="ip"></param>
+    /// <param name="port"></param>
     public Client(string ip, int port)
     {
         _client = new TcpClient(ip, port);
@@ -16,6 +23,9 @@ public class Client : IDisposable
         _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
     }
 
+    /// <summary>
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    /// </summary>
     public void Dispose()
     {
         _client.Dispose();
@@ -23,6 +33,11 @@ public class Client : IDisposable
         _writer.Dispose();
     }
 
+    /// <summary>
+    /// sends List request to the server
+    /// </summary>
+    /// <param name="path">path to directory to list</param>
+    /// <returns>asynchronous Task with server response</returns>
     public async Task<string?> ListAsync(string path)
     {
         await _writer.WriteLineAsync("1 " + path);
@@ -30,6 +45,13 @@ public class Client : IDisposable
         return response == "-1" ? "directory not found" : response;
     }
 
+    /// <summary>
+    /// sends List request to the server
+    /// </summary>
+    /// <param name="path">path to file to get</param>
+    /// <returns>asynchronous Task with server response</returns>
+    /// <exception cref="FileNotFoundException">thrown if file is not found on the server</exception>
+    /// <exception cref="InvalidDataException">thrown if server response is corrupted</exception>
     public async Task<byte[]> GetAsync(string path)
     {
         await _writer.WriteLineAsync("2 " + path);

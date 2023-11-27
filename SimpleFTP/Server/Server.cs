@@ -1,20 +1,31 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Server;
 
+/// <summary>
+/// represents a simple FTP server 
+/// </summary>
 public class Server
 {
     private readonly TcpListener _listener;
     private readonly CancellationTokenSource _source = new();
 
+    /// <summary>
+    /// initializes a new instance of Server class that listens to the specified ip address and port
+    /// </summary>
+    /// <param name="ip"></param>
+    /// <param name="port"></param>
     public Server(IPAddress ip, int port)
     {
         _listener = new TcpListener(ip, port);
     }
 
+    /// <summary>
+    /// asynchronously starts the server
+    /// </summary>
+    /// <returns></returns>
     public async Task StartAsync()
     {
         try
@@ -35,6 +46,9 @@ public class Server
         }
     }
 
+    /// <summary>
+    /// stops the server
+    /// </summary>
     public void Stop()
     {
         _source.Cancel();
