@@ -100,8 +100,8 @@ public class Server
         }
         var dirs = Directory.GetDirectories(path);
         var files = Directory.GetFiles(path);
+        int length = dirs.Length + files.Length;
         List<string> stringBuilder = new();
-        stringBuilder.Add($"{dirs.Length + files.Length}");
         foreach (var dir in dirs)
         {
             stringBuilder.Add($"{dir.Replace("\\", "/")} true");
@@ -110,7 +110,8 @@ public class Server
         {
             stringBuilder.Add($"{file.Replace("\\", "/")} false");
         }
-        await writer.WriteLineAsync(String.Join(' ', stringBuilder));
+        stringBuilder.Sort();
+        await writer.WriteLineAsync(length + " " + String.Join(' ', stringBuilder));
     }
 
     private static async Task GetRequestHandlerAsync(string path, Stream stream)
