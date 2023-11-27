@@ -7,7 +7,7 @@ namespace Tests
     {
         private Server.Server server;
         private Client.Client client;
-        private static readonly int PORT = 80;
+        private static readonly int PORT = 25565;
 
         [OneTimeSetUp]
         public void SetUp()
