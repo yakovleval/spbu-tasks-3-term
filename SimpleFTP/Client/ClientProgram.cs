@@ -56,7 +56,7 @@ while (true)
             {
                 var path = request.Split(" ")[1];
                 var name = Path.GetFileName(path);
-                Console.WriteLine("enter the path to the directory of downloaded file:");
+                Console.WriteLine("enter the path of downloaded file:");
                 var targetPath = Console.ReadLine();
                 if (targetPath == null)
                 {
