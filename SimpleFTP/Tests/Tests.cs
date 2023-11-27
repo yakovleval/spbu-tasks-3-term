@@ -5,30 +5,30 @@ namespace Tests
 {
     public class Tests
     {
-        private Server.Server server = new (IPAddress.Any, PORT);
+        private Server.Server server;
         private Client.Client client;
-        private static readonly int PORT = 8888;
+        private static readonly int PORT = 25565;
 
         [OneTimeSetUp]
         public void SetUp()
         {
+            server = new(IPAddress.Loopback, PORT);
             Task.Run(() => server.StartAsync());
-            Thread.Sleep(1000);
             client = new(IPAddress.Loopback.ToString(), PORT);
         }
 
         [OneTimeTearDown]
         public void TearDown()
         {
-            client.Dispose();
             server.Stop();
+            client.Dispose();
         }
 
         [Test]
         public async Task TestListExistingFolder()
         {
             var result = await client.ListAsync("../../../TestFolder");
-            var expected = "3 ..\\..\\..\\TestFolder\\folder1 true ..\\..\\..\\TestFolder\\1.txt false ..\\..\\..\\TestFolder\\2.txt false";
+            var expected = "3 ../../../TestFolder/folder1 true ../../../TestFolder/1.txt false ../../../TestFolder/2.txt false";
             Assert.That(result, Is.EqualTo(expected));
         }
 
@@ -43,8 +43,8 @@ namespace Tests
         [Test]
         public async Task TestGetExistingFile()
         {
-            var result = await client.GetAsync("..\\..\\..\\TestFolder\\1.txt");
-            var expected = File.ReadAllBytes("..\\..\\..\\TestFolder\\1.txt");
+            var result = await client.GetAsync("../../../TestFolder/1.txt");
+            var expected = File.ReadAllBytes("../../../TestFolder/1.txt");
             Assert.That(result.SequenceEqual(expected), Is.True);
         }
 
