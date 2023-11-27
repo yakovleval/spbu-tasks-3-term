@@ -27,7 +27,7 @@ namespace Tests
         [Test]
         public async Task TestListExistingFolder()
         {
-            var result = await client.ListAsync("../../../TestFolder/");
+            var result = await client.ListAsync("../../../TestFolder");
             var expected = "3 ..\\..\\..\\TestFolder\\folder1 true ..\\..\\..\\TestFolder\\1.txt false ..\\..\\..\\TestFolder\\2.txt false";
             Assert.That(result, Is.EqualTo(expected));
         }
