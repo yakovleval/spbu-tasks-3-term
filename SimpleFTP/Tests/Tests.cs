@@ -62,7 +62,7 @@ namespace Tests
             var clients = new Client.Client[numberOfClients];
             for (int i = 0; i < numberOfClients; i++)
             {
-                clients[i] = new Client.Client(IP, PORT);
+                clients[i] = new Client.Client(IPAddress.Loopback.ToString(), PORT);
             }
             List<byte[]> results = new();
             var threads = new Thread[numberOfClients];
