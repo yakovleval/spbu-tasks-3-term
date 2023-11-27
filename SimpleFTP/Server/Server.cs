@@ -8,7 +8,7 @@ public class Server
 {
     private static readonly string IP = "localhost";
     private static readonly int PORT = 8888;
-    private readonly TcpListener _listener = new(IPAddress.Any, PORT);
+    private readonly TcpListener _listener = new(IPAddress.Loopback, PORT);
 
     public async Task StartAsync()
     {
@@ -18,7 +18,6 @@ public class Server
         {
             var client = await _listener.AcceptTcpClientAsync();
             await Console.Out.WriteLineAsync("new client");
-            //ClientHander(client);
             _ = Task.Run(async () => await ClientHanderAsync(client));
         }
     }
@@ -28,27 +27,34 @@ public class Server
         using var stream = client.GetStream();
         using var reader = new StreamReader(stream);
         using var writer = new StreamWriter(stream) { AutoFlush = true };
-        while (client.Connected)
+        using (client)
         {
-            var line = await reader.ReadLineAsync();
-            var splittedLine = line?.Split(" ");
-            if (splittedLine is null || splittedLine.Length != 2)
+            while (true)
             {
-                await writer.WriteLineAsync("incorrect request");
-                continue;
-            }
-            var (request, path) = (splittedLine[0], splittedLine[1]);
-            switch (request)
-            {
-                case "1":
-                    await ListRequestHandlerAsync(path, writer);
+                var line = await reader.ReadLineAsync();
+                var splittedLine = line?.Split(" ");
+                if (splittedLine is null)
+                {
                     break;
-                case "2":
-                    await GetRequestHandlerAsync(path, writer);
-                    break;
-                default:
-                    await writer.WriteLineAsync("unknown request");
-                    break;
+                }
+                if (splittedLine is null || splittedLine.Length != 2)
+                {
+                    await writer.WriteLineAsync("-1");
+                    continue;
+                }
+                var (request, path) = (splittedLine[0], splittedLine[1]);
+                switch (request)
+                {
+                    case "1":
+                        await ListRequestHandlerAsync(path, writer);
+                        break;
+                    case "2":
+                        await GetRequestHandlerAsync(path, writer);
+                        break;
+                    default:
+                        await writer.WriteLineAsync("-1");
+                        break;
+                }
             }
         }
 
@@ -83,7 +89,12 @@ public class Server
             await writer.WriteLineAsync("-1");
             return;
         }
-        var bytes = File.ReadAllBytes(path);
-        await writer.WriteLineAsync($"{bytes.Length} {bytes}");
+        var bytes = await File.ReadAllBytesAsync(path);
+        var chars = new char[bytes.Length];
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            chars[i] = (char)bytes[i];
+        }
+        await writer.WriteLineAsync($"{bytes.Length} {new string(chars)}");
     }
 }

@@ -1,43 +1,33 @@
 ﻿using System.Net.Sockets;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Client;
 
-public class Client
+public class Client : IDisposable
 {
-    private static readonly string IP = "localhost";
-    private static readonly int PORT = 8888;
-    private readonly TcpClient _client = new(IP, PORT);
-    private readonly NetworkStream stream;
-    private readonly StreamReader reader;
-    private readonly StreamWriter writer;
+    private readonly TcpClient _client;
+    private readonly StreamReader _reader;
+    private readonly StreamWriter _writer;
 
-    public Client()
+    public Client(string ip, int port)
     {
-        stream = _client.GetStream();
-        reader = new StreamReader(stream);
-        writer = new StreamWriter(stream) { AutoFlush = true };
-
+        _client = new TcpClient(ip, port);
+        _reader = new StreamReader(_client.GetStream());
+        _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
     }
 
-    public async Task StartAsync()
+    public void Dispose()
     {
-        while (true)
-        {
-            var request = await Console.In.ReadLineAsync();
-            if (request is null)
-            {
-                await Console.Out.WriteLineAsync("error: empty respones");
-                continue;
-            }
-            var response = await SendRequestAsync(request);
-            await Console.Out.WriteLineAsync(response);
-        }
+        _client.Close();
+        _reader.Close();
+        _writer.Close();
     }
 
-    private async Task<string?> SendRequestAsync(string request)
+    public async Task<string?> SendRequestAsync(string request)
     {
-        await writer.WriteLineAsync(request);
-        return await reader.ReadLineAsync();
+        await _writer.WriteLineAsync(request);
+        var response = await _reader.ReadLineAsync();
+        return response == "-1" ? "file not found" : response;
     }
 }
