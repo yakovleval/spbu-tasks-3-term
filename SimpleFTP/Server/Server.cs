@@ -7,8 +7,12 @@ namespace Server;
 
 public class Server
 {
-    private static readonly int PORT = 8888;
-    private readonly TcpListener _listener = new(IPAddress.Any, PORT);
+    private readonly TcpListener _listener;
+
+    public Server(IPAddress ip, int port)
+    {
+        _listener = new TcpListener(ip, port);
+    }
 
     public async Task StartAsync()
     {

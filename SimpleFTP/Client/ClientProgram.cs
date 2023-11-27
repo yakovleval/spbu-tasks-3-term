@@ -1,25 +1,23 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Text.RegularExpressions;
+string help = """
+    usage: dotnet run <ip> <port>
+    """;
 
-Console.WriteLine("enter ip address:");
-var ip = Console.ReadLine();
-if (ip is null)
-{
-    Console.WriteLine("invalid ip");
-    return;
-}
-Console.WriteLine("enter port:");
+IPAddress? ip;
 int port;
-if (!int.TryParse(Console.ReadLine(), out port) ||
-    port < 1 ||
-    port > 1 << 16)
+if (args.Length != 2 ||
+    !IPAddress.TryParse(args[0], out ip) ||
+    ip is null ||
+    !int.TryParse(args[1], out port))
 {
-    Console.WriteLine("invalid port");
+    Console.WriteLine(help);
     return;
 }
 Client.Client client;
 try
 {
-    client = new(ip, port);
+    client = new(ip.ToString(), port);
 }
 catch
 {
@@ -48,16 +46,24 @@ while (true)
             Console.WriteLine(await client.ListAsync(request));
             break;
         default:
-            var path = request.Split(" ")[1];
-            var name = Path.GetFileName(path);
-            Console.WriteLine("enter the path of downloaded file:");
-            var targetPath = Console.ReadLine();
-            if (targetPath == null)
+            try
             {
+                var path = request.Split(" ")[1];
+                var name = Path.GetFileName(path);
+                Console.WriteLine("enter the path of downloaded file:");
+                var targetPath = Console.ReadLine();
+                if (targetPath == null)
+                {
+                    break;
+                }
+                var file = await client.GetAsync(request);
+                File.WriteAllBytes(Path.Combine(targetPath, name), file);
                 break;
             }
-            var file = await client.GetAsync(request);
-            File.WriteAllBytes(Path.Combine(targetPath, name), file);
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("file not fould");
+            }
             break;
     }
 }

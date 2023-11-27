@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 
 namespace Client;
 
@@ -7,13 +8,9 @@ public class Client : IDisposable
     private readonly TcpClient _client;
     private readonly StreamReader _reader;
     private readonly StreamWriter _writer;
-    private readonly string _ip;
-    private readonly int _port;
 
     public Client(string ip, int port)
     {
-        _ip = ip;
-        _port = port;
         _client = new TcpClient(ip, port);
         _reader = new StreamReader(_client.GetStream());
         _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
@@ -36,7 +33,7 @@ public class Client : IDisposable
     public async Task<byte[]> GetAsync(string request)
     {
         await _writer.WriteLineAsync(request);
-        using var stream = _client.GetStream();
+        var stream = _client.GetStream();
         long size = await ReadLong(stream);
         if (size == -1)
         {
