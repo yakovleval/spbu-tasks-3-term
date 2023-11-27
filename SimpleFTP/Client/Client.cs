@@ -23,16 +23,16 @@ public class Client : IDisposable
         _writer.Dispose();
     }
 
-    public async Task<string?> ListAsync(string request)
+    public async Task<string?> ListAsync(string path)
     {
-        await _writer.WriteLineAsync(request);
+        await _writer.WriteLineAsync("1 " + path);
         var response = await _reader.ReadLineAsync();
         return response == "-1" ? "directory not found" : response;
     }
 
-    public async Task<byte[]> GetAsync(string request)
+    public async Task<byte[]> GetAsync(string path)
     {
-        await _writer.WriteLineAsync(request);
+        await _writer.WriteLineAsync("2 " + path);
         var stream = _client.GetStream();
         long size = await ReadLong(stream);
         if (size == -1)

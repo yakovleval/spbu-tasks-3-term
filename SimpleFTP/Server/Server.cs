@@ -36,15 +36,11 @@ public class Server
             while (client.Connected)
             {
                 var line = await reader.ReadLineAsync();
-                if (line is null || !Regex.IsMatch(line, @"[012]( [a-zA-Z_0-9.\/]+)?"))
+                if (line is null || !Regex.IsMatch(line, @"[12] [a-zA-Z_0-9.\/]+"))
                 {
                     continue;
                 }
                 var request = line.Split(" ")[0];
-                if (request == "0")
-                {
-                    break;
-                }
                 var path = line.Split(" ")[1];
                 switch (request)
                 {
@@ -76,17 +72,17 @@ public class Server
         }
         var dirs = Directory.GetDirectories(path);
         var files = Directory.GetFiles(path);
-        StringBuilder stringBuilder = new();
-        stringBuilder.Append($"{dirs.Length + files.Length} ");
+        List<string> stringBuilder = new();
+        stringBuilder.Add($"{dirs.Length + files.Length}");
         foreach (var dir in dirs)
         {
-            stringBuilder.Append($"{dir} true ");
+            stringBuilder.Add($"{Path.GetRelativePath(".", dir)} true");
         }
         foreach (var file in files)
         {
-            stringBuilder.Append($"{file} false ");
+            stringBuilder.Add($"{Path.GetRelativePath(".", file)} false");
         }
-        await writer.WriteLineAsync(stringBuilder.ToString());
+        await writer.WriteLineAsync(String.Join(' ', stringBuilder));
     }
 
     private async Task GetRequestHandlerAsync(string path, Stream stream)

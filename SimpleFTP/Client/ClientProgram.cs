@@ -38,12 +38,18 @@ while (true)
         Console.WriteLine("incorrect command");
         continue;
     }
+    var command = request.Split(" ")[0];
+    var givenPath = request.Split(" ")[1];
+    if (request[0] == '0')
+    {
+        return;
+    }
     switch (request[0])
     {
         case '0':
             return;
         case '1':
-            Console.WriteLine(await client.ListAsync(request));
+            Console.WriteLine(await client.ListAsync(givenPath));
             break;
         default:
             try
@@ -56,13 +62,17 @@ while (true)
                 {
                     break;
                 }
-                var file = await client.GetAsync(request);
+                var file = await client.GetAsync(givenPath);
                 File.WriteAllBytes(Path.Combine(targetPath, name), file);
                 break;
             }
             catch (FileNotFoundException)
             {
                 Console.WriteLine("file not fould");
+            }
+            catch (InvalidDataException)
+            {
+                Console.WriteLine("recieved data is corrupted");
             }
             break;
     }
