@@ -42,11 +42,6 @@ public class Server
                     break;
                 }
                 var path = line.Split(" ")[1];
-                if (!File.Exists(path) && !Directory.Exists(path))
-                {
-                    await writer.WriteLineAsync("-1");
-                    continue;
-                }
                 switch (request)
                 {
                     case "1":
@@ -70,6 +65,11 @@ public class Server
 
     private async Task ListRequestHandlerAsync(string path, StreamWriter writer)
     {
+        if (!Directory.Exists(path))
+        {
+            await writer.WriteLineAsync("-1");
+            return;
+        }
         var dirs = Directory.GetDirectories(path);
         var files = Directory.GetFiles(path);
         StringBuilder stringBuilder = new();
@@ -87,8 +87,13 @@ public class Server
 
     private async Task GetRequestHandlerAsync(string path, Stream stream)
     {
+        if (!File.Exists(path))
+        {
+            await stream.WriteAsync(BitConverter.GetBytes(-1L));
+            return;
+        }
         var bytes = await File.ReadAllBytesAsync(path);
-        var length = BitConverter.GetBytes(bytes.Length);
+        var length = BitConverter.GetBytes((long)bytes.Length);
         var space = BitConverter.GetBytes(' ');
 
         await stream.WriteAsync(length);

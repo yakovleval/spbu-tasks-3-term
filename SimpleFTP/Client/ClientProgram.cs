@@ -40,31 +40,24 @@ while (true)
         Console.WriteLine("incorrect command");
         continue;
     }
-    try
+    switch (request[0])
     {
-        switch (request[0])
-        {
-            case '0':
-                return;
-            case '1':
-                Console.WriteLine(await client.ListAsync(request));
+        case '0':
+            return;
+        case '1':
+            Console.WriteLine(await client.ListAsync(request));
+            break;
+        default:
+            var path = request.Split(" ")[1];
+            var name = Path.GetFileName(path);
+            Console.WriteLine("enter the path of downloaded file:");
+            var targetPath = Console.ReadLine();
+            if (targetPath == null)
+            {
                 break;
-            default:
-                var path = request.Split(" ")[1];
-                var name = Path.GetFileName(path);
-                Console.WriteLine("enter the path of downloaded file:");
-                var targetPath = Console.ReadLine();
-                if (targetPath == null)
-                {
-                    break;
-                }
-                var file = await client.GetAsync(request);
-                File.WriteAllBytes(Path.Combine(targetPath, name), file);
-                break;
-        }
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine(e);
+            }
+            var file = await client.GetAsync(request);
+            File.WriteAllBytes(Path.Combine(targetPath, name), file);
+            break;
     }
 }

@@ -37,22 +37,41 @@ public class Client : IDisposable
     {
         await _writer.WriteLineAsync(request);
         using var stream = _client.GetStream();
-        byte[] firstNumber = new byte[sizeof(int)];
-        await stream.ReadExactlyAsync(firstNumber, 0, sizeof(int));
-        var size = BitConverter.ToInt64(firstNumber);
+        long size = await ReadLong(stream);
         if (size == -1)
         {
             throw new FileNotFoundException();
         }
-        stream.ReadByte();
-        stream.ReadByte();
+        await ReadChar(stream);
         byte[] file = new byte[size];
-        await stream.ReadExactlyAsync(file);
+        int read = await stream.ReadAsync(file);
+        if (read < file.Length)
+        {
+            throw new InvalidDataException();
+        }
         return file;
     }
 
-    public async Task Disconnect()
+    private async Task<long> ReadLong(Stream stream)
     {
-        await _writer.WriteLineAsync("0");
+        byte[] array = new byte[sizeof(long)];
+        int read = await stream.ReadAsync(array, 0, array.Length);
+        if (read < array.Length)
+        {
+            throw new InvalidDataException();
+        }
+        return BitConverter.ToInt64(array);
+
+    }
+
+    private async Task<char> ReadChar(Stream stream)
+    {
+        byte[] array = new byte[sizeof(char)];
+        int read = await stream.ReadAsync(array, 0, array.Length);
+        if (read < array.Length)
+        {
+            throw new InvalidDataException();
+        }
+        return BitConverter.ToChar(array);
     }
 }
