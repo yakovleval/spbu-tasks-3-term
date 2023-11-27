@@ -14,6 +14,7 @@ namespace Tests
         {
             server = new(IPAddress.Loopback, PORT);
             Task.Run(() => server.StartAsync());
+            Thread.Sleep(1000);
             client = new(IPAddress.Loopback.ToString(), PORT);
         }
 
