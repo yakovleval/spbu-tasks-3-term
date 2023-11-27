@@ -17,7 +17,7 @@ if (args.Length != 2 ||
 Client.Client client;
 try
 {
-    client = new(ip.ToString(), port);
+    client = new(ip, port);
 }
 catch
 {
@@ -33,7 +33,7 @@ while (true)
     {
         return;
     }
-    if (!Regex.IsMatch(request, @"[012]( [a-zA-Z_0-9.\/]+)?"))
+    if (!Regex.IsMatch(request, @"^[012]( [a-zA-Z_0-9.\/]+)?$"))
     {
         Console.WriteLine("incorrect command");
         continue;

@@ -28,34 +28,22 @@ public class Server
     /// <returns></returns>
     public async Task StartAsync()
     {
-        _listener.Start();
-        await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
-        while (true)
+        try
         {
-            var client = await _listener.AcceptTcpClientAsync(_source.Token);
-            await Console.Out.WriteLineAsync("client connected");
-            _ = Task.Run(async () => await ClientHanderAsync(client));
+            _listener.Start();
+            await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
+            while (true)
+            {
+                var client = await _listener.AcceptTcpClientAsync(_source.Token);
+                await Console.Out.WriteLineAsync("client connected");
+                _ = Task.Run(async () => await ClientHanderAsync(client));
+            }
         }
-        //try
-        //{
-        //    _listener.Start();
-        //    await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
-        //    while (true)
-        //    {
-        //        var client = await _listener.AcceptTcpClientAsync(_source.Token);
-        //        await Console.Out.WriteLineAsync("client connected");
-        //        _ = Task.Run(async () => await ClientHanderAsync(client));
-        //    }
-        //}
-        //catch (Exception e)
-        //{
-        //    await Console.Out.WriteLineAsync(e.Message);
-        //}
-        //finally
-        //{
-        //    _listener.Stop();
-        //    await Console.Out.WriteLineAsync("server stopped");
-        //}
+        finally
+        {
+            _listener.Stop();
+            await Console.Out.WriteLineAsync("server stopped");
+        }
     }
 
     /// <summary>
@@ -116,11 +104,11 @@ public class Server
         stringBuilder.Add($"{dirs.Length + files.Length}");
         foreach (var dir in dirs)
         {
-            stringBuilder.Add($"{Path.GetRelativePath(".", dir)} true");
+            stringBuilder.Add($"{dir.Replace("\\", "/")} true");
         }
         foreach (var file in files)
         {
-            stringBuilder.Add($"{Path.GetRelativePath(".", file)} false");
+            stringBuilder.Add($"{file.Replace("\\", "/")} false");
         }
         await writer.WriteLineAsync(String.Join(' ', stringBuilder));
     }

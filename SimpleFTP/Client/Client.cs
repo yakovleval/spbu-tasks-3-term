@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 
 namespace Client;
 
@@ -16,9 +17,9 @@ public class Client : IDisposable
     /// </summary>
     /// <param name="ip"></param>
     /// <param name="port"></param>
-    public Client(string ip, int port)
+    public Client(IPAddress ip, int port)
     {
-        _client = new TcpClient(ip, port);
+        _client = new TcpClient(ip.ToString(), port);
         _reader = new StreamReader(_client.GetStream());
         _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
     }
