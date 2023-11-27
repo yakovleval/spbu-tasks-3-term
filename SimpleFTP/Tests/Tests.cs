@@ -28,7 +28,7 @@ namespace Tests
         public async Task TestListExistingFolder()
         {
             var result = await client.ListAsync("../../../TestFolder");
-            var expected = "3 ..\\..\\..\\TestFolder\\folder1 true ..\\..\\..\\TestFolder\\1.txt false ..\\..\\..\\TestFolder\\2.txt false";
+            var expected = "3 ../../../TestFolder/folder1 true ../../../TestFolder/1.txt false ../../../TestFolder/2.txt false";
             Assert.That(result, Is.EqualTo(expected));
         }
 
@@ -43,8 +43,8 @@ namespace Tests
         [Test]
         public async Task TestGetExistingFile()
         {
-            var result = await client.GetAsync("..\\..\\..\\TestFolder\\1.txt");
-            var expected = File.ReadAllBytes("..\\..\\..\\TestFolder\\1.txt");
+            var result = await client.GetAsync("../../../TestFolder/1.txt");
+            var expected = File.ReadAllBytes("../../../TestFolder/1.txt");
             Assert.That(result.SequenceEqual(expected), Is.True);
         }
 

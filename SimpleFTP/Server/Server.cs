@@ -104,11 +104,11 @@ public class Server
         stringBuilder.Add($"{dirs.Length + files.Length}");
         foreach (var dir in dirs)
         {
-            stringBuilder.Add($"{Path.GetRelativePath(".", dir)} true");
+            stringBuilder.Add($"{dir.Replace("\\", "/")} true");
         }
         foreach (var file in files)
         {
-            stringBuilder.Add($"{Path.GetRelativePath(".", file)} false");
+            stringBuilder.Add($"{file.Replace("\\", "/")} false");
         }
         await writer.WriteLineAsync(String.Join(' ', stringBuilder));
     }
