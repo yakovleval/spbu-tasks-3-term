@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 
 namespace Tests
@@ -6,7 +7,7 @@ namespace Tests
     {
         private Server.Server server;
         private Client.Client client;
-        private static readonly int PORT = 7777;
+        private static readonly int PORT = 25565;
 
         [OneTimeSetUp]
         public void SetUp()
@@ -60,11 +61,15 @@ namespace Tests
             int numberOfClients = 8;
             string path = "../../../TestFolder/1.txt";
             var clients = new Client.Client[numberOfClients];
+            int count = 0;
             for (int i = 0; i < numberOfClients; i++)
             {
                 clients[i] = new Client.Client(IPAddress.Loopback.ToString(), PORT);
+                count++;
             }
-            List<byte[]> results = new();
+            Console.WriteLine($"clients: {count}");
+            count = 0;
+            ConcurrentBag<byte[]> results = new();
             var threads = new Thread[numberOfClients];
             for (int i = 0; i < numberOfClients; i++)
             {
@@ -75,7 +80,9 @@ namespace Tests
                     results.Add(clients[localI].GetAsync(path).Result);
                 });
                 threads[i].Start();
+                count++;
             }
+            Console.WriteLine($"threads started: {count}");
             raceEvent.Set();
             foreach (var thread in threads)
             {
