@@ -7,12 +7,12 @@ namespace Tests
     {
         private Server.Server server;
         private Client.Client client;
-        private static readonly int PORT = 25565;
+        private static readonly int PORT = 8888;
 
         [OneTimeSetUp]
         public void SetUp()
         {
-            server = new(IPAddress.Loopback, PORT);
+            server = new(IPAddress.Any, PORT);
             Task.Run(() => server.StartAsync());
             client = new(IPAddress.Loopback.ToString(), PORT);
         }
@@ -20,8 +20,8 @@ namespace Tests
         [OneTimeTearDown]
         public void TearDown()
         {
-            server.Stop();
             client.Dispose();
+            server.Stop();
         }
 
         [Test]
