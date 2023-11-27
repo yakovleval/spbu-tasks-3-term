@@ -43,6 +43,7 @@ public class Client : IDisposable
             throw new FileNotFoundException();
         }
         stream.ReadByte();
+        stream.ReadByte();
         byte[] file = new byte[size];
         await stream.ReadExactlyAsync(file);
         return file;

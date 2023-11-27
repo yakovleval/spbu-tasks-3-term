@@ -65,13 +65,9 @@ using (client)
                     break;
             }
         }
-        catch (FileNotFoundException e)
+        catch (Exception e)
         {
-            Console.WriteLine("file not found");
-        }
-        catch
-        {
-            Console.WriteLine("unable to send a request");
+            Console.WriteLine(e);
         }
     }
 }
