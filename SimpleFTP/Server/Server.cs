@@ -25,9 +25,9 @@ public class Server
     private async Task ClientHanderAsync(TcpClient client)
     {
         using var stream = client.GetStream();
-        using var reader = new StreamReader(stream);
+        using var reader = new StreamReader(client.GetStream());
         using var writer = new StreamWriter(stream) { AutoFlush = true };
-        using (client)
+        try
         {
             while (client.Connected)
             {
@@ -60,7 +60,11 @@ public class Server
                         break;
                 }
             }
+        }
+        finally
+        {
             await Console.Out.WriteLineAsync("client disconnected");
+            client.Dispose();
         }
     }
 

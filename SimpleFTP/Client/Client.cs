@@ -21,9 +21,9 @@ public class Client : IDisposable
 
     public void Dispose()
     {
-        _client.Close();
-        _reader.Close();
-        _writer.Close();
+        _client.Dispose();
+        _reader.Dispose();
+        _writer.Dispose();
     }
 
     public async Task<string?> ListAsync(string request)
@@ -39,7 +39,7 @@ public class Client : IDisposable
         using var stream = _client.GetStream();
         byte[] firstNumber = new byte[sizeof(int)];
         await stream.ReadExactlyAsync(firstNumber, 0, sizeof(int));
-        int size = BitConverter.ToInt32(firstNumber);
+        var size = BitConverter.ToInt64(firstNumber);
         if (size == -1)
         {
             throw new FileNotFoundException();
