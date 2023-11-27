@@ -44,11 +44,11 @@ while (true)
     {
         return;
     }
-    switch (request[0])
+    switch (command)
     {
-        case '0':
+        case "0":
             return;
-        case '1':
+        case "1":
             Console.WriteLine(await client.ListAsync(givenPath));
             break;
         default:

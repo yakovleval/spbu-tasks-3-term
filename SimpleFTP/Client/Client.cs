@@ -49,10 +49,10 @@ public class Client : IDisposable
         return file;
     }
 
-    private async Task<long> ReadLong(Stream stream)
+    private static async Task<long> ReadLong(Stream stream)
     {
         byte[] array = new byte[sizeof(long)];
-        int read = await stream.ReadAsync(array, 0, array.Length);
+        int read = await stream.ReadAsync(array);
         if (read < array.Length)
         {
             throw new InvalidDataException();
@@ -61,10 +61,10 @@ public class Client : IDisposable
 
     }
 
-    private async Task<char> ReadChar(Stream stream)
+    private static async Task<char> ReadChar(Stream stream)
     {
         byte[] array = new byte[sizeof(char)];
-        int read = await stream.ReadAsync(array, 0, array.Length);
+        int read = await stream.ReadAsync(array);
         if (read < array.Length)
         {
             throw new InvalidDataException();

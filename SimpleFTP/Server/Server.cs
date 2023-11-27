@@ -26,7 +26,7 @@ public class Server
         }
     }
 
-    private async Task ClientHanderAsync(TcpClient client)
+    private static async Task ClientHanderAsync(TcpClient client)
     {
         using var stream = client.GetStream();
         using var reader = new StreamReader(client.GetStream());
@@ -63,7 +63,7 @@ public class Server
         }
     }
 
-    private async Task ListRequestHandlerAsync(string path, StreamWriter writer)
+    private static async Task ListRequestHandlerAsync(string path, StreamWriter writer)
     {
         if (!Directory.Exists(path))
         {
@@ -85,7 +85,7 @@ public class Server
         await writer.WriteLineAsync(String.Join(' ', stringBuilder));
     }
 
-    private async Task GetRequestHandlerAsync(string path, Stream stream)
+    private static async Task GetRequestHandlerAsync(string path, Stream stream)
     {
         if (!File.Exists(path))
         {

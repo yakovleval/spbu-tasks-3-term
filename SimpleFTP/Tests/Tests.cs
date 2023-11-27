@@ -14,14 +14,14 @@ namespace Tests
         {
             server = new(IPAddress.Parse(IP), PORT);
             Task.Run(() => server.StartAsync());
-            Task.Delay(500);
             client = new(IP, PORT);
         }
 
         [TearDown]
         public void TearDown()
         {
-            
+            //server.Stop();
+            client.Dispose();
         }
 
         [Test]
@@ -45,7 +45,7 @@ namespace Tests
         {
             var result = await client.GetAsync("..\\..\\..\\TestFolder\\1.txt");
             var expected = File.ReadAllBytes("..\\..\\..\\TestFolder\\1.txt");
-            Assert.IsTrue(result.SequenceEqual(expected));
+            Assert.That(result.SequenceEqual(expected), Is.True);
         }
 
         [Test]
@@ -65,15 +65,15 @@ namespace Tests
             {
                 clients[i] = new Client.Client(IP, PORT);
             }
-            List<byte[]> results = new(numberOfClients);
+            List<byte[]> results = new();
             var threads = new Thread[numberOfClients];
             for (int i = 0; i < numberOfClients; i++)
             {
                 int localI = i;
-                threads[i] = new Thread(async () =>
+                threads[i] = new Thread(() =>
                 {
                     raceEvent.WaitOne();
-                    results[localI] = await clients[localI].GetAsync(path);
+                    results.Add(clients[localI].GetAsync(path).Result);
                 });
                 threads[i].Start();
             }
@@ -83,9 +83,11 @@ namespace Tests
                 thread.Join();
             }
             var expected = File.ReadAllBytes(path);
+
+            Assert.That(results.Count, Is.EqualTo(numberOfClients));
             foreach (var result in results)
             {
-                Assert.IsTrue(result.SequenceEqual(expected));
+                Assert.That(result.SequenceEqual(expected), Is.True);
             }
         }
     }
