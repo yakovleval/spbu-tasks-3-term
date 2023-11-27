@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Server;
 
@@ -8,7 +9,7 @@ public class Server
 {
     private static readonly string IP = "localhost";
     private static readonly int PORT = 8888;
-    private readonly TcpListener _listener = new(IPAddress.Loopback, PORT);
+    private readonly TcpListener _listener = new(IPAddress.Any, PORT);
 
     public async Task StartAsync()
     {
@@ -17,7 +18,7 @@ public class Server
         while (true)
         {
             var client = await _listener.AcceptTcpClientAsync();
-            await Console.Out.WriteLineAsync("new client");
+            await Console.Out.WriteLineAsync("client connected");
             _ = Task.Run(async () => await ClientHanderAsync(client));
         }
     }
@@ -29,44 +30,38 @@ public class Server
         using var writer = new StreamWriter(stream) { AutoFlush = true };
         using (client)
         {
-            while (true)
+            while (client.Connected)
             {
                 var line = await reader.ReadLineAsync();
-                var splittedLine = line?.Split(" ");
-                if (splittedLine is null)
+                if (line is null || !Regex.IsMatch(line, @"[12] [a-zA-Z_0-9.\/]+"))
                 {
-                    break;
+                    continue;
                 }
-                if (splittedLine is null || splittedLine.Length != 2)
+                var (request, path) = (line.Split(" ")[0], line.Split(" ")[1]);
+                if (!File.Exists(path) && !Directory.Exists(path))
                 {
                     await writer.WriteLineAsync("-1");
                     continue;
                 }
-                var (request, path) = (splittedLine[0], splittedLine[1]);
                 switch (request)
                 {
                     case "1":
                         await ListRequestHandlerAsync(path, writer);
                         break;
                     case "2":
-                        await GetRequestHandlerAsync(path, writer);
+                        await GetRequestHandlerAsync(path, stream);
                         break;
                     default:
                         await writer.WriteLineAsync("-1");
                         break;
                 }
             }
+            await Console.Out.WriteLineAsync("client disconnected");
         }
-
     }
 
     private async Task ListRequestHandlerAsync(string path, StreamWriter writer)
     {
-        if (!Directory.Exists(path))
-        {
-            await writer.WriteLineAsync("-1");
-            return;
-        }
         var dirs = Directory.GetDirectories(path);
         var files = Directory.GetFiles(path);
         StringBuilder stringBuilder = new();
@@ -82,19 +77,14 @@ public class Server
         await writer.WriteLineAsync(stringBuilder.ToString());
     }
 
-    private async Task GetRequestHandlerAsync(string path, StreamWriter writer)
+    private async Task GetRequestHandlerAsync(string path, Stream stream)
     {
-        if (!File.Exists(path))
-        {
-            await writer.WriteLineAsync("-1");
-            return;
-        }
         var bytes = await File.ReadAllBytesAsync(path);
-        var chars = new char[bytes.Length];
-        for (int i = 0; i < bytes.Length; i++)
-        {
-            chars[i] = (char)bytes[i];
-        }
-        await writer.WriteLineAsync($"{bytes.Length} {new string(chars)}");
+        var length = BitConverter.GetBytes(bytes.Length);
+        var space = BitConverter.GetBytes(' ');
+
+        await stream.WriteAsync(length);
+        await stream.WriteAsync(space);
+        await stream.WriteAsync(bytes);
     }
 }

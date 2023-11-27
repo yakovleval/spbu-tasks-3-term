@@ -24,10 +24,27 @@ public class Client : IDisposable
         _writer.Close();
     }
 
-    public async Task<string?> SendRequestAsync(string request)
+    public async Task<string?> ListAsync(string request)
     {
         await _writer.WriteLineAsync(request);
         var response = await _reader.ReadLineAsync();
-        return response == "-1" ? "file not found" : response;
+        return response == "-1" ? "directory not found" : response;
+    }
+
+    public async Task<byte[]> GetAsync(string request)
+    {
+        await _writer.WriteLineAsync(request);
+        using var stream = _client.GetStream();
+        byte[] firstNumber = new byte[sizeof(int)];
+        await stream.ReadExactlyAsync(firstNumber, 0, sizeof(int));
+        int size = BitConverter.ToInt32(firstNumber);
+        if (size == -1)
+        {
+            throw new FileNotFoundException();
+        }
+        stream.ReadByte();
+        byte[] file = new byte[size];
+        await stream.ReadExactlyAsync(file);
+        return file;
     }
 }
