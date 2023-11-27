@@ -28,22 +28,34 @@ public class Server
     /// <returns></returns>
     public async Task StartAsync()
     {
-        try
+        _listener.Start();
+        await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
+        while (true)
         {
-            _listener.Start();
-            await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
-            while (true)
-            {
-                var client = await _listener.AcceptTcpClientAsync(_source.Token);
-                await Console.Out.WriteLineAsync("client connected");
-                _ = Task.Run(async () => await ClientHanderAsync(client));
-            }
+            var client = await _listener.AcceptTcpClientAsync(_source.Token);
+            await Console.Out.WriteLineAsync("client connected");
+            _ = Task.Run(async () => await ClientHanderAsync(client));
         }
-        finally
-        {
-            _listener.Stop();
-            await Console.Out.WriteLineAsync("server stopped");
-        }
+        //try
+        //{
+        //    _listener.Start();
+        //    await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
+        //    while (true)
+        //    {
+        //        var client = await _listener.AcceptTcpClientAsync(_source.Token);
+        //        await Console.Out.WriteLineAsync("client connected");
+        //        _ = Task.Run(async () => await ClientHanderAsync(client));
+        //    }
+        //}
+        //catch (Exception e)
+        //{
+        //    await Console.Out.WriteLineAsync(e.Message);
+        //}
+        //finally
+        //{
+        //    _listener.Stop();
+        //    await Console.Out.WriteLineAsync("server stopped");
+        //}
     }
 
     /// <summary>
