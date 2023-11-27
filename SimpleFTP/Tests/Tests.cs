@@ -6,15 +6,14 @@ namespace Tests
     {
         private Server.Server server;
         private Client.Client client;
-        private static readonly string IP = "127.0.0.1";
         private static readonly int PORT = 8888;
 
         [OneTimeSetUp]
         public void SetUp()
         {
-            server = new(IPAddress.Parse(IP), PORT);
+            server = new(IPAddress.Loopback, PORT);
             Task.Run(() => server.StartAsync());
-            client = new(IP, PORT);
+            client = new(IPAddress.Loopback.ToString(), PORT);
         }
 
         [OneTimeTearDown]
