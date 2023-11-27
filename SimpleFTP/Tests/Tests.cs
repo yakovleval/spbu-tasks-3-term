@@ -15,7 +15,7 @@ namespace Tests
             server = new(IPAddress.Loopback, PORT);
             Task.Run(() => server.StartAsync());
             Thread.Sleep(1000);
-            client = new(IPAddress.Loopback.ToString(), PORT);
+            client = new(IPAddress.Loopback, PORT);
         }
 
         [OneTimeTearDown]
@@ -65,7 +65,7 @@ namespace Tests
             int count = 0;
             for (int i = 0; i < numberOfClients; i++)
             {
-                clients[i] = new Client.Client(IPAddress.Loopback.ToString(), PORT);
+                clients[i] = new Client.Client(IPAddress.Loopback, PORT);
                 count++;
             }
             Console.WriteLine($"clients: {count}");
