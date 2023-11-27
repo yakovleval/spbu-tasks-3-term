@@ -1,6 +1,4 @@
 ﻿using System.Net.Sockets;
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Client;
 
@@ -9,9 +7,13 @@ public class Client : IDisposable
     private readonly TcpClient _client;
     private readonly StreamReader _reader;
     private readonly StreamWriter _writer;
+    private readonly string _ip;
+    private readonly int _port;
 
     public Client(string ip, int port)
     {
+        _ip = ip;
+        _port = port;
         _client = new TcpClient(ip, port);
         _reader = new StreamReader(_client.GetStream());
         _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
@@ -47,5 +49,10 @@ public class Client : IDisposable
         byte[] file = new byte[size];
         await stream.ReadExactlyAsync(file);
         return file;
+    }
+
+    public async Task Disconnect()
+    {
+        await _writer.WriteLineAsync("0");
     }
 }
