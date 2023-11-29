@@ -11,7 +11,23 @@ public enum TestResult
     FAILED,
     IGNORED
 }
-public record Report(string MethodName, TestResult state, string? reason = null, long timeElapsed = 0);
+public record MethodReport(string MethodName, TestResult State, string? Reason = null, long timeElapsed = 0);
+
+public record ClassReport(List<MethodReport> Reports)
+{
+    public int Passed => Reports
+        .Select(report => report.State)
+        .Where(state => state == TestResult.PASSED)
+        .Count();
+    public int Failed => Reports
+        .Select(report => report.State)
+        .Where(state => state == TestResult.FAILED)
+        .Count();
+    public int Ignored => Reports
+        .Select(report => report.State)
+        .Where(state => state == TestResult.IGNORED)
+        .Count();
+}
 
 public class TestClass
 {
@@ -61,17 +77,17 @@ public class TestClass
         }
     }
 
-    public Report RunTest(MethodInfo method, object instance)
+    public MethodReport RunTest(MethodInfo method, object instance)
     {
         var attr = method.GetCustomAttribute<TestAttribute>()!;
         if (attr.Ignore is not null)
         {
-            return new Report(method.Name, TestResult.IGNORED, attr.Ignore);
+            return new MethodReport(method.Name, TestResult.IGNORED, attr.Ignore);
         }
         Parallel.Invoke(_beforeMethods
             .Select(m => new Action(() => m.Invoke(instance, null)))
             .ToArray());
-        Report report;
+        MethodReport report;
         var watch = new Stopwatch();
         try
         {
@@ -81,29 +97,29 @@ public class TestClass
         }
         catch (MyAssertionException e)
         {
-            report = new Report(method.Name, TestResult.FAILED, e.Message);
+            report = new MethodReport(method.Name, TestResult.FAILED, e.Message);
         }
         catch (Exception e)
         {
             if (attr.Expected is null)
             {
-                report = new Report(method.Name, TestResult.FAILED, $"unexpected exception: {e.GetType()}");
+                report = new MethodReport(method.Name, TestResult.FAILED, $"unexpected exception: {e.GetType()}");
             }
             if (attr.Expected != e.GetType())
             {
-                report = new Report(method.Name, TestResult.FAILED, $"expected exception: {attr.Expected}, but was: {e.GetType()}");
+                report = new MethodReport(method.Name, TestResult.FAILED, $"expected exception: {attr.Expected}, but was: {e.GetType()}");
             }
         }
-        report = new Report(method.Name, TestResult.PASSED, null, watch.ElapsedMilliseconds);
+        report = new MethodReport(method.Name, TestResult.PASSED, null, watch.ElapsedMilliseconds);
         Parallel.Invoke(_afterMethods
             .Select(m => new Action(() => m.Invoke(instance, null)))
             .ToArray());
         return report;
     }
 
-    public List<Report> RunTests()
+    public ClassReport RunTests()
     {
-        ConcurrentBag<Report> reports = new();
+        ConcurrentBag<MethodReport> reports = new();
 
         Parallel.Invoke(_beforeClassMethods
             .Select(method => new Action(() => method.Invoke(_testClass, null)))
@@ -119,6 +135,6 @@ public class TestClass
             .Select(method => new Action(() => method.Invoke(_testClass, null)))
             .ToArray());
 
-        return reports.ToList();
+        return new ClassReport(reports.ToList());
     }
 }
