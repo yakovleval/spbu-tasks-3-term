@@ -5,22 +5,27 @@ namespace MyNUnit;
 
 public class TestAssembly
 {
-    private List<TestClass> _testClasses;
+    private TestClass[] _testClasses;
 
     public TestAssembly(Assembly assembly)
     {
         _testClasses = assembly
             .ExportedTypes
             .Select(type => new TestClass(type))
-            .ToList();
+            .ToArray();
     }
 
-    public List<ClassReport> RunTests()
+    public List<Report> RunTests()
     {
-        ConcurrentBag<ClassReport> results = new();
+        List<(int, Report[])> results = new();
         Parallel.Invoke(_testClasses
-            .Select(testClass => new Action(() => results.Add(testClass.RunTests())))
+            .Select((testClass, index) => new Action(() => results.Add((index, testClass.RunTests()))))
             .ToArray());
-        return results.ToList();
+        results.Sort();
+        List<Report> assemblyReport = results
+            .Select(pair => pair.Item2)
+            .SelectMany(report => report)
+            .ToList();
+        return assemblyReport;
     }
 }

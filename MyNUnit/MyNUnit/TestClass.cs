@@ -11,56 +11,44 @@ public enum TestResult
     FAILED,
     IGNORED
 }
-public record MethodReport(string MethodName, TestResult State, string? Reason = null, long timeElapsed = 0);
-
-public record ClassReport(List<MethodReport> Reports)
+public record Report(string MethodName, TestResult State, string? Reason = null, long TimeElapsed = 0)
 {
-    public int Passed => Reports
-        .Select(report => report.State)
-        .Where(state => state == TestResult.PASSED)
-        .Count();
-    public int Failed => Reports
-        .Select(report => report.State)
-        .Where(state => state == TestResult.FAILED)
-        .Count();
-    public int Ignored => Reports
-        .Select(report => report.State)
-        .Where(state => state == TestResult.IGNORED)
-        .Count();
+    public override string ToString()
+    {
+        return State switch
+        {
+            TestResult.PASSED => $"{MethodName} -- OK, time elapsed: {TimeElapsed}",
+            TestResult.FAILED =>  $"{MethodName} -- FAILED, reason: {Reason}, time elapsed: {TimeElapsed}",
+            _ => $"{MethodName} -- IGNORED, reason: {Reason}"
+        };
+    }
 }
 
 public class TestClass
 {
     Type _testClass;
-    private List<MethodInfo> _beforeClassMethods;
-    private List<MethodInfo> _afterClassMethods;
-    private List<MethodInfo> _beforeMethods;
-    private List<MethodInfo> _afterMethods;
-    private List<MethodInfo> _testMethods;
+    private MethodInfo[] _beforeClassMethods;
+    private MethodInfo[] _afterClassMethods;
+    private MethodInfo[] _beforeMethods;
+    private MethodInfo[] _afterMethods;
+    private MethodInfo[] _testMethods;
+
+    private MethodInfo[] InitArrayOfMethods<TAttribute>(MethodInfo[] methods) where TAttribute : Attribute
+    {
+        return methods
+            .AsEnumerable<MethodInfo>()
+            .Where(method => method.GetCustomAttribute<TAttribute>() != null)
+            .ToArray();
+    }
     public TestClass(Type testClass)
     {
         _testClass = testClass;
         var methods = testClass.GetMethods();
-        _beforeClassMethods = methods
-            .AsEnumerable<MethodInfo>()
-            .Where(method => method.GetCustomAttribute<BeforeClassAttribute>() != null)
-            .ToList();
-        _afterClassMethods = methods
-            .AsEnumerable<MethodInfo>()
-            .Where(method => method.GetCustomAttribute<AfterClassAttribute>() != null)
-            .ToList();
-        _beforeMethods = methods
-            .AsEnumerable<MethodInfo>()
-            .Where(method => method.GetCustomAttribute<BeforeAttribute>() != null)
-            .ToList();
-        _afterMethods = methods
-            .AsEnumerable<MethodInfo>()
-            .Where(method => method.GetCustomAttribute<AfterAttribute>() != null)
-            .ToList();
-        _testMethods = methods
-            .AsEnumerable<MethodInfo>()
-            .Where(method => method.GetCustomAttribute<TestAttribute>() != null)
-            .ToList();
+        _beforeClassMethods = InitArrayOfMethods<BeforeClassAttribute>(methods);
+        _afterClassMethods = InitArrayOfMethods<AfterClassAttribute>(methods);
+        _beforeMethods = InitArrayOfMethods<BeforeAttribute>(methods);
+        _afterMethods = InitArrayOfMethods<AfterAttribute>(methods);
+        _testMethods = InitArrayOfMethods<TestAttribute>(methods);
         foreach (var method in _beforeClassMethods)
         {
             if (!method.IsStatic)
@@ -77,64 +65,61 @@ public class TestClass
         }
     }
 
-    public MethodReport RunTest(MethodInfo method, object instance)
+    public Report RunTest(MethodInfo method, object instance)
     {
         var attr = method.GetCustomAttribute<TestAttribute>()!;
         if (attr.Ignore is not null)
         {
-            return new MethodReport(method.Name, TestResult.IGNORED, attr.Ignore);
+            return new Report(method.Name, TestResult.IGNORED, attr.Ignore);
         }
-        Parallel.Invoke(_beforeMethods
-            .Select(m => new Action(() => m.Invoke(instance, null)))
-            .ToArray());
-        MethodReport report;
+
+        RunMethods(_beforeMethods, instance);
+
         var watch = new Stopwatch();
+        Type? exceptionType = null;
+        watch.Start();
         try
         {
-            watch.Start();
             method.Invoke(_testClass, null);
-            watch.Stop();
-        }
-        catch (MyAssertionException e)
-        {
-            report = new MethodReport(method.Name, TestResult.FAILED, e.Message);
         }
         catch (Exception e)
         {
-            if (attr.Expected is null)
-            {
-                report = new MethodReport(method.Name, TestResult.FAILED, $"unexpected exception: {e.GetType()}");
-            }
-            if (attr.Expected != e.GetType())
-            {
-                report = new MethodReport(method.Name, TestResult.FAILED, $"expected exception: {attr.Expected}, but was: {e.GetType()}");
-            }
+            exceptionType = e.GetType();
         }
-        report = new MethodReport(method.Name, TestResult.PASSED, null, watch.ElapsedMilliseconds);
-        Parallel.Invoke(_afterMethods
-            .Select(m => new Action(() => m.Invoke(instance, null)))
-            .ToArray());
-        return report;
+        watch.Stop();
+
+        RunMethods(_afterMethods, instance);
+
+        if (exceptionType == attr.Expected)
+        {
+            return new Report(method.Name, TestResult.PASSED, null, watch.ElapsedMilliseconds);
+        }
+        else if (attr.Expected is null)
+        {
+            return new Report(method.Name, TestResult.FAILED, $"unexpected exception: {exceptionType}", watch.ElapsedMilliseconds);
+        }
+        else
+        {
+            return new Report(method.Name, TestResult.FAILED, $"expected: {attr.Expected}, but was: {exceptionType}", watch.ElapsedMilliseconds)
+        }
     }
 
-    public ClassReport RunTests()
+    public Report[] RunTests()
     {
-        ConcurrentBag<MethodReport> reports = new();
-
-        Parallel.Invoke(_beforeClassMethods
-            .Select(method => new Action(() => method.Invoke(_testClass, null)))
-            .ToArray());
-
+        var reports = new Report[_testMethods.Length];
+        RunMethods(_beforeClassMethods, _testClass);
         var instance = Activator.CreateInstance(_testClass)!;
-
         Parallel.Invoke(_testMethods
-            .Select(method => new Action(() => reports.Add(RunTest(method, instance))))
+            .Select((method, index) => new Action(() => reports[index] = RunTest(method, instance)))
             .ToArray());
+        RunMethods(_afterClassMethods, _testClass);
+        return reports;
+    }
 
-        Parallel.Invoke(_afterClassMethods
-            .Select(method => new Action(() => method.Invoke(_testClass, null)))
+    private void RunMethods(MethodInfo[] methods, object methodsObject)
+    {
+        Parallel.Invoke(methods
+            .Select(method => new Action(() => method.Invoke(methodsObject, null)))
             .ToArray());
-
-        return new ClassReport(reports.ToList());
     }
 }
