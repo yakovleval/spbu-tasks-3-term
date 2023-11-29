@@ -4,7 +4,7 @@
 public class TestAttribute : Attribute
 {
     public Type? Expected { get; private set; }
-    public string? Ignore { get; private set; };
+    public string? Ignore { get; private set; }
     public TestAttribute(Type? expected = null, string? ignore = null)
     {
         Expected = expected;

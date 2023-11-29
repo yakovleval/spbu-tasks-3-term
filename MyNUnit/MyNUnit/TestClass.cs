@@ -80,11 +80,11 @@ public class TestClass
         watch.Start();
         try
         {
-            method.Invoke(_testClass, null);
+            method.Invoke(instance, null);
         }
-        catch (Exception e)
+        catch (TargetInvocationException e)
         {
-            exceptionType = e.GetType();
+            exceptionType = e.InnerException!.GetType();
         }
         watch.Stop();
 
@@ -100,7 +100,7 @@ public class TestClass
         }
         else
         {
-            return new Report(method.Name, TestResult.FAILED, $"expected: {attr.Expected}, but was: {exceptionType}", watch.ElapsedMilliseconds)
+            return new Report(method.Name, TestResult.FAILED, $"expected: {attr.Expected}, but was: {exceptionType}", watch.ElapsedMilliseconds);
         }
     }
 

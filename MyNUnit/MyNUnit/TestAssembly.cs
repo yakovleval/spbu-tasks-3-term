@@ -8,7 +8,6 @@ public class TestAssembly
     private TestClass[] _testClasses;
     public TestAssembly(Assembly assembly)
     {
-        _assembly = assembly;
         _testClasses = assembly
             .ExportedTypes
             .Select(type => new TestClass(type))

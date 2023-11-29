@@ -10,23 +10,25 @@ public class MyNUnit
     {
         var directory = Directory
             .EnumerateFiles(path, "*.dll")
+            .Where(file => !file.EndsWith("MyNUnit.dll"))
             .ToList();
         directory.Sort();
         _testAssemblies = directory
-            .Select(Assembly.Load)
+            .Select(Assembly.LoadFrom)
             .Select(a => new TestAssembly(a))
             .ToList();
     }
 
-    public void RunTests()
+    public void RunTestsAndPrintResult()
     {
         List<List<Report>> result = new();
         Parallel.Invoke(_testAssemblies
-            .Select((testClass, index) => new Action(() => result.Add(testClass.RunTests())))
+            .Select(testClass => new Action(() => result.Add(testClass.RunTests())))
             .ToArray());
+        PrintResult(result);
     }
 
-    public void PrintResult(List<List<Report>> result)
+    private void PrintResult(List<List<Report>> result)
     {
         foreach (var assemblyResult in result)
         {
