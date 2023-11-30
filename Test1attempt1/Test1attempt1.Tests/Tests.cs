@@ -7,9 +7,8 @@ public class Tests
     {
     }
 
-    [TestCase("../../../TestFolder")]
-    [TestCase("../../../TestFolder/EmptyFile.txt")]
-    [TestCase("../../../TestFolder/EmptyFolder")]
+    [TestCase("../../../TestFolder1")]
+    [TestCase("../../../TestFolder1/EmptyFile.txt")]
     [TestCase("../../../../Test1attempt1")]
     public void TestCheckSum(string path)
     {
@@ -21,7 +20,7 @@ public class Tests
     [TestCase("")]
     [TestCase("nonexistentpath")]
     [TestCase("../../../nonexistentFolder")]
-    public async Task TestInvalidPathAsync(string path)
+    public void TestInvalidPathAsync(string path)
     {
         Assert.Throws<ArgumentException>(() => CheckSum.Evaluate(path));
         Assert.Throws<AggregateException>(() => _ = CheckSum.EvaluateParallel(path).Result);

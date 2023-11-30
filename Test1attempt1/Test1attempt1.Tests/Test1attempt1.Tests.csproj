@@ -21,8 +21,4 @@
     <ProjectReference Include="..\Test1attempt1\Test1attempt1.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="TestFolder\EmptyFolder\" />
-  </ItemGroup>
-
 </Project>
