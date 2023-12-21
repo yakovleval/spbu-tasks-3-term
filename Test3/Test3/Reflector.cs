@@ -3,6 +3,9 @@ using System.Text;
 
 namespace Reflector;
 
+/// <summary>
+/// class which generates code for given type
+/// </summary>
 public static class Reflector
 {
     private static string GetStructureString(TypeInfo type)
