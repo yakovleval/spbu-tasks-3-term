@@ -2,6 +2,9 @@
 
 namespace Reflector;
 
+/// <summary>
+/// class that represents method of class
+/// </summary>
 public class Method : Member
 {
     public string Modifier { get; private set; }
@@ -9,6 +12,10 @@ public class Method : Member
     public string ReturnType { get; private set; }
     public string Signature { get; private set; }
 
+    /// <summary>
+    /// creates an instance of 'Method' class
+    /// </summary>
+    /// <param name="methodInfo"></param>
     public Method(MethodInfo methodInfo)
     {
         if (methodInfo.IsPrivate)
@@ -47,6 +54,10 @@ public class Method : Member
         return signature;
     }
 
+    /// <summary>
+    /// overrides 'ToString' method of Object
+    /// </summary>
+    /// <returns></returns>
     public override string ToString()
     {
         return Modifier + " " +

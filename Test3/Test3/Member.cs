@@ -1,5 +1,8 @@
 ﻿namespace Reflector;
 
+/// <summary>
+/// class that represents member of class 
+/// </summary>
 public class Member
 {
     protected static string GetTypeString(Type type)
@@ -19,6 +22,11 @@ public class Member
         return typeString;
     }
 
+    /// <summary>
+    /// overrides 'Equals' method of Object
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
     public override bool Equals(object? obj)
     {
         if (obj is null)
@@ -28,6 +36,10 @@ public class Member
         return ToString() == obj.ToString();
     }
 
+    /// <summary>
+    /// overrides 'GetHashCode' method of Object
+    /// </summary>
+    /// <returns></returns>
     public override int GetHashCode()
     {
         return ToString()!.GetHashCode();

@@ -73,6 +73,11 @@ public class Structure : Member
         }
         return result;
     }
+
+    /// <summary>
+    /// overriden 'ToString' method
+    /// </summary>
+    /// <returns></returns>
     public override string ToString()
     {
         StringBuilder result = new();

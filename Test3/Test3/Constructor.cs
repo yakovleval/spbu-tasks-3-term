@@ -2,12 +2,19 @@
 
 namespace Reflector;
 
+/// <summary>
+/// class that represents constructor of class
+/// </summary>
 public class Constructor : Member
 {
     public string Modifier { get; private set; }
     public bool IsStatic { get; private set; }
     public string Signature { get; private set; }
 
+    /// <summary>
+    /// creates an instance of 'Constructor' class
+    /// </summary>
+    /// <param name="ctorInfo"></param>
     public Constructor(ConstructorInfo ctorInfo)
     {
         if (ctorInfo.IsPrivate)
@@ -44,6 +51,10 @@ public class Constructor : Member
         return signature;
     }
 
+    /// <summary>
+    /// overrides 'ToString' method of Object
+    /// </summary>
+    /// <returns></returns>
     public override string ToString()
     {
         return Modifier + " " +
