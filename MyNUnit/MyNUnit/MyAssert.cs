@@ -1,6 +1,6 @@
 ﻿namespace MyNUnit;
 
-public class MyAssertionException : Exception
+public class MyAssertionException : System.Exception
 {
     public MyAssertionException(string message = "") : base(message) { }
 }

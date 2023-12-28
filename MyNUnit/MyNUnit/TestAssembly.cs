@@ -14,17 +14,12 @@ public class TestAssembly
             .ToArray();
     }
 
-    public List<Report> RunTests()
+    public ClassReport[] RunTests()
     {
-        List<(int, Report[])> results = new();
+        ClassReport[] results = new ClassReport[_testClasses.Length];
         Parallel.Invoke(_testClasses
-            .Select((testClass, index) => new Action(() => results.Add((index, testClass.RunTests()))))
+            .Select((testClass, index) => new Action(() => results[index] = testClass.RunTests()))
             .ToArray());
-        results.Sort();
-        List<Report> assemblyReport = results
-            .Select(pair => pair.Item2)
-            .SelectMany(report => report)
-            .ToList();
-        return assemblyReport;
+        return results;
     }
 }

@@ -1,21 +1,21 @@
 ﻿namespace MyNUnit;
 
 [AttributeUsage(AttributeTargets.Method)]
-public class TestAttribute : Attribute
+public class MyTestAttribute : Attribute
 {
     public Type? Expected { get; private set; }
     public string? Ignore { get; private set; }
-    public TestAttribute(Type? expected = null, string? ignore = null)
+    public MyTestAttribute(Type? expected = null, string? ignore = null)
     {
         Expected = expected;
         Ignore = ignore;
     }
 }
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Method)]
 public class BeforeClassAttribute : Attribute { }
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Method)]
 public class AfterClassAttribute : Attribute { }
 
 [AttributeUsage(AttributeTargets.Method)]

@@ -1,28 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
-using System.Reflection.Metadata;
 
 namespace MyNUnit;
-
-public enum TestResult
-{
-    PASSED,
-    FAILED,
-    IGNORED
-}
-public record Report(string MethodName, TestResult State, string? Reason = null, long TimeElapsed = 0)
-{
-    public override string ToString()
-    {
-        return State switch
-        {
-            TestResult.PASSED => $"{MethodName} -- OK, time elapsed: {TimeElapsed}",
-            TestResult.FAILED =>  $"{MethodName} -- FAILED, reason: {Reason}, time elapsed: {TimeElapsed}",
-            _ => $"{MethodName} -- IGNORED, reason: {Reason}"
-        };
-    }
-}
 
 public class TestClass
 {
@@ -48,7 +28,7 @@ public class TestClass
         _afterClassMethods = InitArrayOfMethods<AfterClassAttribute>(methods);
         _beforeMethods = InitArrayOfMethods<BeforeAttribute>(methods);
         _afterMethods = InitArrayOfMethods<AfterAttribute>(methods);
-        _testMethods = InitArrayOfMethods<TestAttribute>(methods);
+        _testMethods = InitArrayOfMethods<MyTestAttribute>(methods);
         foreach (var method in _beforeClassMethods)
         {
             if (!method.IsStatic)
@@ -65,15 +45,36 @@ public class TestClass
         }
     }
 
-    public Report RunTest(MethodInfo method, object instance)
+    private string GenerateSideMethodsFailureMessage(List<(string, TargetInvocationException)> result)
     {
-        var attr = method.GetCustomAttribute<TestAttribute>()!;
+        string message = "unhandled exceptions occured in side methods:\n";
+        foreach (var (methodName, exception) in result)
+        {
+            message += $"{methodName}(): " +
+                $"{exception.InnerException!.GetType().Name}: " +
+                $"{exception.InnerException!.Message}";
+        }
+        return message;
+    }
+
+    public TestReport RunTest(MethodInfo method, object instance)
+    {
+        var attr = method.GetCustomAttribute<MyTestAttribute>()!;
         if (attr.Ignore is not null)
         {
-            return new Report(method.Name, TestResult.IGNORED, attr.Ignore);
+            return new TestReport(method.Name, 
+                TestResult.IGNORED, 
+                attr.Ignore);
         }
 
-        RunMethods(_beforeMethods, instance);
+        var result = RunMethods(_beforeMethods, instance);
+        if (result.Count > 0)
+        {
+            var reason = GenerateSideMethodsFailureMessage(result);
+            return new TestReport(method.Name,
+                TestResult.IGNORED,
+                reason);
+        }
 
         var watch = new Stopwatch();
         Type? exceptionType = null;
@@ -88,38 +89,89 @@ public class TestClass
         }
         watch.Stop();
 
-        RunMethods(_afterMethods, instance);
+        result = RunMethods(_afterMethods, instance);
+        if (result.Count > 0)
+        {
+            var reason = GenerateSideMethodsFailureMessage(result);
+            return new TestReport(method.Name,
+                TestResult.IGNORED,
+                reason);
+        }
 
         if (exceptionType == attr.Expected)
         {
-            return new Report(method.Name, TestResult.PASSED, null, watch.ElapsedMilliseconds);
+            return new TestReport(method.Name, 
+                TestResult.PASSED, 
+                null, 
+                watch.ElapsedMilliseconds);
         }
         else if (attr.Expected is null)
         {
-            return new Report(method.Name, TestResult.FAILED, $"unexpected exception: {exceptionType}", watch.ElapsedMilliseconds);
+            return new TestReport(method.Name, 
+                TestResult.FAILED, 
+                $"unexpected exception: {exceptionType}", 
+                watch.ElapsedMilliseconds);
         }
         else
         {
-            return new Report(method.Name, TestResult.FAILED, $"expected: {attr.Expected}, but was: {exceptionType}", watch.ElapsedMilliseconds);
+            return new TestReport(method.Name, 
+                TestResult.FAILED, 
+                $"expected: {attr.Expected}, but was: {exceptionType}", 
+                watch.ElapsedMilliseconds);
         }
     }
 
-    public Report[] RunTests()
+    public ClassReport RunTests()
     {
-        var reports = new Report[_testMethods.Length];
-        RunMethods(_beforeClassMethods, _testClass);
+        var reports = new TestReport[_testMethods.Length];
+        var result = RunMethods(_beforeClassMethods, null);
+        if (result.Count > 0)
+        {
+            var reason = GenerateSideMethodsFailureMessage(result);
+            return new ClassReport(_testClass.Name,
+                ClassResult.IGNORED,
+                null,
+                reason);
+
+        }
         var instance = Activator.CreateInstance(_testClass)!;
         Parallel.Invoke(_testMethods
-            .Select((method, index) => new Action(() => reports[index] = RunTest(method, instance)))
+            .Select((method, index) => new Action(() =>
+            {
+                reports[index] = RunTest(method, instance);
+            }))
             .ToArray());
-        RunMethods(_afterClassMethods, _testClass);
-        return reports;
+        result = RunMethods(_afterClassMethods, null);
+        if (result.Count > 0)
+        {
+            var reason = GenerateSideMethodsFailureMessage(result);
+            return new ClassReport(_testClass.Name,
+                ClassResult.IGNORED,
+                null,
+                reason);
+
+        }
+        return new ClassReport(_testClass.Name,
+            ClassResult.COMPLETED,
+            reports);
     }
 
-    private void RunMethods(MethodInfo[] methods, object methodsObject)
+    private List<(string, TargetInvocationException)> RunMethods(MethodInfo[] methods, object? methodsObject)
     {
+        var exceptions = new ConcurrentBag<(string, TargetInvocationException)>();
         Parallel.Invoke(methods
-            .Select(method => new Action(() => method.Invoke(methodsObject, null)))
+            .Select(method => new Action(() =>
+            {
+                try
+                {
+                    method.Invoke(methodsObject, null);
+                }
+                catch (TargetInvocationException e)
+                {
+                    exceptions.Add((method.Name, e));
+                }
+            }))
             .ToArray());
+        return exceptions.ToList();
     }
 }

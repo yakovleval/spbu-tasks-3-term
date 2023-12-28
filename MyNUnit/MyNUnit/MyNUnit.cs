@@ -21,20 +21,20 @@ public class MyNUnit
 
     public void RunTestsAndPrintResult()
     {
-        List<List<Report>> result = new();
+        ClassReport[][] result = new ClassReport[_testAssemblies.Count][];
         Parallel.Invoke(_testAssemblies
-            .Select(testClass => new Action(() => result.Add(testClass.RunTests())))
+            .Select((testAssembly, index) => new Action(() => result[index] = testAssembly.RunTests()))
             .ToArray());
         PrintResult(result);
     }
 
-    private void PrintResult(List<List<Report>> result)
+    private void PrintResult(ClassReport[][] result)
     {
         foreach (var assemblyResult in result)
         {
-            foreach (var report in assemblyResult)
+            foreach (var classReport in assemblyResult)
             {
-                Console.WriteLine(report);
+                Console.WriteLine(classReport);
             }
         }
     }
