@@ -4,6 +4,9 @@ using System.Reflection;
 
 namespace MyNUnit;
 
+/// <summary>
+/// class which represents test class
+/// </summary>
 public class TestClass
 {
     Type _testClass;
@@ -20,7 +23,13 @@ public class TestClass
             .Where(method => method.GetCustomAttribute<TAttribute>() != null)
             .ToArray();
     }
-
+    
+    /// <summary>
+    /// creates an instance of TestClass class
+    /// </summary>
+    /// <param name="testClass">'Type' object of the test class</param>
+    /// <exception cref="CustomAttributeFormatException">thrown if one of the 
+    /// 'BeforeClass' or 'AfterClass' methods is not static</exception>
     public TestClass(Type testClass)
     {
         _testClass = testClass;
@@ -58,6 +67,12 @@ public class TestClass
         return message;
     }
 
+    /// <summary>
+    /// runs a given test from the class
+    /// </summary>
+    /// <param name="method">object representing the method</param>
+    /// <param name="instance">instance of the test class</param>
+    /// <returns>result of the test</returns>
     public TestReport RunTest(MethodInfo method, object instance)
     {
         var attr = method.GetCustomAttribute<MyTestAttribute>()!;
@@ -122,6 +137,10 @@ public class TestClass
         }
     }
 
+    /// <summary>
+    /// runs all tests from the test class
+    /// </summary>
+    /// <returns>result of all tests in the test class</returns>
     public ClassReport RunTests()
     {
         var reports = new TestReport[_testMethods.Length];

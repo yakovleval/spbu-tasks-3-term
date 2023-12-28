@@ -2,9 +2,18 @@
 
 namespace MyNUnit;
 
+/// <summary>
+/// Class with methods for running tests and printing results
+/// </summary>
 public class MyNUnit
 {
     private List<TestClass> _testClasses;
+
+    /// <summary>
+    /// creates an instance of 'MyNUnit' class
+    /// </summary>
+    /// <param name="path">path to a directory which contains 
+    /// assemblies with test classes</param>
     public MyNUnit(string path)
     {
         var directory = Directory
@@ -22,6 +31,9 @@ public class MyNUnit
             .ToList();
     }
 
+    /// <summary>
+    /// runs all tests in the directory and prints result of them
+    /// </summary>
     public void RunTestsAndPrintResult()
     {
         ClassReport[] result = new ClassReport[_testClasses.Count];
