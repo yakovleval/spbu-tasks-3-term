@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-
-const string help = "usage: dotnet run <path-to-assemblies>";
+﻿const string help = "usage: dotnet run <path-to-assemblies>";
 if (args.Length != 1)
 {
     Console.WriteLine(help);

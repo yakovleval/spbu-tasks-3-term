@@ -1,11 +1,10 @@
-﻿using System.Collections.Immutable;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace MyNUnit;
 
 public class MyNUnit
 {
-    private List<TestAssembly> _testAssemblies;
+    private List<TestClass> _testClasses;
     public MyNUnit(string path)
     {
         var directory = Directory
@@ -13,29 +12,30 @@ public class MyNUnit
             .Where(file => !file.EndsWith("MyNUnit.dll"))
             .ToList();
         directory.Sort();
-        _testAssemblies = directory
+        var testAssemblies = directory
             .Select(Assembly.LoadFrom)
-            .Select(a => new TestAssembly(a))
+            .ToList();
+        _testClasses = testAssemblies
+            .SelectMany(a => a.ExportedTypes
+                             .Select(type => new TestClass(type))
+                             .ToArray())
             .ToList();
     }
 
     public void RunTestsAndPrintResult()
     {
-        ClassReport[][] result = new ClassReport[_testAssemblies.Count][];
-        Parallel.Invoke(_testAssemblies
-            .Select((testAssembly, index) => new Action(() => result[index] = testAssembly.RunTests()))
+        ClassReport[] result = new ClassReport[_testClasses.Count];
+        Parallel.Invoke(_testClasses
+            .Select((testClass, index) => new Action(() => result[index] = testClass.RunTests()))
             .ToArray());
         PrintResult(result);
     }
 
-    private void PrintResult(ClassReport[][] result)
+    private void PrintResult(ClassReport[] result)
     {
-        foreach (var assemblyResult in result)
+        foreach (var classReport in result)
         {
-            foreach (var classReport in assemblyResult)
-            {
-                Console.WriteLine(classReport);
-            }
+            Console.WriteLine(classReport);
         }
     }
 }

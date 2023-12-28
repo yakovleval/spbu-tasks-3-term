@@ -14,8 +14,8 @@ namespace MyNUnit.Tests
                 .ExportedTypes.Where(t => t.Name == "TestOrder").First();
             var testClass = new TestClass(t);
             testClass.RunTests();
-            var listField = t.GetField("ORDER", 
-                BindingFlags.Static | 
+            var listField = t.GetField("ORDER",
+                BindingFlags.Static |
                 BindingFlags.Public);
             var queue = (ConcurrentQueue<string>?)listField!.GetValue(null);
             var list = queue!.ToList();

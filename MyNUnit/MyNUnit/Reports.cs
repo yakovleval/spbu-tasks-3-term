@@ -1,6 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-
-namespace MyNUnit;
+﻿namespace MyNUnit;
 
 public enum TestResult
 {
@@ -28,9 +26,9 @@ public record TestReport(string methodName, TestResult state, string? reason = n
     }
 }
 
-public record ClassReport(string className, 
+public record ClassReport(string className,
     ClassResult state,
-    TestReport[]? testReports = null, 
+    TestReport[]? testReports = null,
     string? reason = null)
 {
     public override string ToString()

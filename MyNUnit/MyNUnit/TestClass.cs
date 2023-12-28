@@ -20,6 +20,7 @@ public class TestClass
             .Where(method => method.GetCustomAttribute<TAttribute>() != null)
             .ToArray();
     }
+
     public TestClass(Type testClass)
     {
         _testClass = testClass;
@@ -62,8 +63,8 @@ public class TestClass
         var attr = method.GetCustomAttribute<MyTestAttribute>()!;
         if (attr.Ignore is not null)
         {
-            return new TestReport(method.Name, 
-                TestResult.IGNORED, 
+            return new TestReport(method.Name,
+                TestResult.IGNORED,
                 attr.Ignore);
         }
 
@@ -100,23 +101,23 @@ public class TestClass
 
         if (exceptionType == attr.Expected)
         {
-            return new TestReport(method.Name, 
-                TestResult.PASSED, 
-                null, 
+            return new TestReport(method.Name,
+                TestResult.PASSED,
+                null,
                 watch.ElapsedMilliseconds);
         }
         else if (attr.Expected is null)
         {
-            return new TestReport(method.Name, 
-                TestResult.FAILED, 
-                $"unexpected exception: {exceptionType}", 
+            return new TestReport(method.Name,
+                TestResult.FAILED,
+                $"unexpected exception: {exceptionType}",
                 watch.ElapsedMilliseconds);
         }
         else
         {
-            return new TestReport(method.Name, 
-                TestResult.FAILED, 
-                $"expected: {attr.Expected}, but was: {exceptionType}", 
+            return new TestReport(method.Name,
+                TestResult.FAILED,
+                $"expected: {attr.Expected}, but was: {exceptionType}",
                 watch.ElapsedMilliseconds);
         }
     }
