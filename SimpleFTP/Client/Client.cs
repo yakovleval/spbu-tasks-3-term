@@ -9,19 +9,29 @@ namespace Client;
 public class Client : IDisposable
 {
     private readonly TcpClient _client;
-    private readonly StreamReader _reader;
-    private readonly StreamWriter _writer;
+    private StreamReader _reader;
+    private StreamWriter _writer;
+
+    public async Task ConnectAsync(IPAddress ip, int port)
+    {
+        await _client.ConnectAsync(ip.ToString(), port);
+        _reader = new StreamReader(_client.GetStream());
+        _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
+    }
 
     /// <summary>
     /// initializes a new instance of Client that connects to the specified ip address and port
     /// </summary>
     /// <param name="ip"></param>
     /// <param name="port"></param>
-    public Client(IPAddress ip, int port)
+    public Client()
     {
-        _client = new TcpClient(ip.ToString(), port);
-        _reader = new StreamReader(_client.GetStream());
-        _writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
+        _client = new TcpClient();
+        //await ConnectAsync(ip, port);
+        //_client.ConnectAsync(ip.ToString(), port);
+        
+        //_reader = new StreamReader(_client.GetStream());
+        //_writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
     }
 
     /// <summary>
@@ -81,7 +91,6 @@ public class Client : IDisposable
             throw new InvalidDataException();
         }
         return BitConverter.ToInt64(array);
-
     }
 
     private static async Task<char> ReadChar(Stream stream)

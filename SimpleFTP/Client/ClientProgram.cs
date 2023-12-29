@@ -17,7 +17,8 @@ if (args.Length != 2 ||
 Client.Client client;
 try
 {
-    client = new(ip, port);
+    client = new();
+    await client.ConnectAsync(ip, port);
 }
 catch
 {

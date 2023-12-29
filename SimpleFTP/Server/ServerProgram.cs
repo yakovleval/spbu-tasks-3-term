@@ -12,5 +12,12 @@ if (args.Length != 2 ||
     return;
 }
 
-Server.Server server = new(ip, port);
-await server.StartAsync();
+try
+{
+    Server.Server server = new(ip, port);
+    await server.StartAsync();
+}
+catch
+{
+    Console.WriteLine("invalid port or ip");
+}

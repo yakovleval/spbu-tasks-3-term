@@ -10,12 +10,13 @@ namespace Tests
         private static readonly int PORT = 25565;
 
         [OneTimeSetUp]
-        public void SetUp()
+        public async Task SetUp()
         {
             server = new(IPAddress.Loopback, PORT);
             Task.Run(() => server.StartAsync());
             Thread.Sleep(1000);
-            client = new(IPAddress.Loopback, PORT);
+            client = new();
+            await client.ConnectAsync(IPAddress.Loopback, PORT);
         }
 
         [OneTimeTearDown]
@@ -56,7 +57,7 @@ namespace Tests
         }
 
         [Test]
-        public void TestGetRequestRace()
+        public async Task TestGetRequestRace()
         {
             var raceEvent = new ManualResetEvent(false);
             int numberOfClients = 8;
@@ -65,7 +66,8 @@ namespace Tests
             int count = 0;
             for (int i = 0; i < numberOfClients; i++)
             {
-                clients[i] = new Client.Client(IPAddress.Loopback, PORT);
+                clients[i] = new Client.Client();
+                await clients[i].ConnectAsync(IPAddress.Loopback, PORT);
                 count++;
             }
             Console.WriteLine($"clients: {count}");

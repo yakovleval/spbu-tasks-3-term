@@ -32,7 +32,7 @@ public class Server
         {
             _listener.Start();
             await Console.Out.WriteLineAsync($"working on {_listener.LocalEndpoint}");
-            while (true)
+            while (!_source.IsCancellationRequested)
             {
                 var client = await _listener.AcceptTcpClientAsync(_source.Token);
                 await Console.Out.WriteLineAsync("client connected");
