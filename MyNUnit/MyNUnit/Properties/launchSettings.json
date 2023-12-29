@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MyNUnit": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\aleksandr\\source\\repos\\spbu-tasks-3-term\\MyNUnit\\TestProject\\release"
+    }
+  }
+}
