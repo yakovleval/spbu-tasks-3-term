@@ -33,17 +33,10 @@ public class MyThreadPool
             _threads[i] = new Thread(() =>
             {
                 WaitHandle.WaitAny(_events);
-                while (true)
+                while (!_source.IsCancellationRequested)
                 {
                     Action? task;
-                    lock (_source)
-                    {
-                        if (_source.IsCancellationRequested)
-                        {
-                            break;
-                        }
-                        _tasksQueue.TryDequeue(out task);
-                    }
+                    _tasksQueue.TryDequeue(out task);
                     if (task != null)
                     {
                         Interlocked.Increment(ref _workingThreadsNumber);
@@ -128,7 +121,7 @@ public class MyThreadPool
         private TResult? _result;
         private readonly Func<TResult> _supplier;
         private Exception? _exception;
-        Queue<Action> _nextActions = new();
+        ConcurrentQueue<Action> _nextActions = new();
         private readonly MyThreadPool _threadPool;
         private readonly ManualResetEvent _resultEvent = new(false);
         private readonly object _actionReadySyncObj = new();
@@ -173,9 +166,13 @@ public class MyThreadPool
                     _resultEvent.Set();
                     while (_nextActions.Count > 0)
                     {
-                        _threadPool.SubmitAction(_nextActions.Dequeue());
+                        Action? action;
+                        _nextActions.TryDequeue(out action);
+                        if (action is not null)
+                        {
+                            _threadPool.SubmitAction(action);
+                        }
                     }
-                    
                 }
             }
         }
