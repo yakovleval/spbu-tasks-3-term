@@ -1,4 +1,6 @@
-﻿namespace MyNUnit;
+﻿using System.Text;
+
+namespace MyNUnit;
 
 public enum TestResult
 {
@@ -22,15 +24,12 @@ public enum ClassResult
 /// <param name="timeElapsed">time elapsed during test run</param>
 public record TestReport(string methodName, TestResult state, string? reason = null, long timeElapsed = 0)
 {
-    public override string ToString()
+    public override string ToString() => state switch
     {
-        return state switch
-        {
-            TestResult.PASSED => $"{methodName}() -- OK, time elapsed: {timeElapsed}\n",
-            TestResult.FAILED => $"{methodName}() -- FAILED, reason: {reason}, time elapsed: {timeElapsed}\n",
-            _ => $"{methodName}() -- IGNORED, reason: {reason}\n"
-        };
-    }
+        TestResult.PASSED => $"{methodName}() -- OK, time elapsed: {timeElapsed}\n",
+        TestResult.FAILED => $"{methodName}() -- FAILED, reason: {reason}, time elapsed: {timeElapsed}\n",
+        _ => $"{methodName}() -- IGNORED, reason: {reason}\n"
+    };
 }
 
 /// <summary>
@@ -49,12 +48,13 @@ public record ClassReport(string className,
     {
         if (state == ClassResult.COMPLETED)
         {
-            string result = $"{className}:\n";
+            var result = new StringBuilder();
+            result.Append($"{className}:\n");
             foreach (var report in testReports!)
             {
-                result += report;
+                result.Append(report);
             }
-            return result;
+            return result.ToString();
         }
         return $"{className} -- IGNORED, reason: {reason}\n";
     }

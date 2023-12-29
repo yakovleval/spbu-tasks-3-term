@@ -20,7 +20,6 @@ public class MyNUnit
             .EnumerateFiles(path, "*.dll")
             .Where(file => !file.EndsWith("MyNUnit.dll"))
             .ToList();
-        directory.Sort();
         var testAssemblies = directory
             .Select(Assembly.LoadFrom)
             .ToList();

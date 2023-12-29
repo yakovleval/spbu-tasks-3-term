@@ -5,7 +5,10 @@ namespace TestProject;
 public class TestRegularTests
 {
     [MyTest]
-    public void PassingTest() { }
+    public int PassingTest()
+    {
+        return 0;
+    }
 
     [MyTest(typeof(FormatException))]
     public void ExpectedException()

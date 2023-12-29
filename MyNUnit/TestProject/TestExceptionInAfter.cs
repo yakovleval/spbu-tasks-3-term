@@ -11,11 +11,8 @@ public class TestExceptionInAfter
     }
 
     [MyTest]
-    public void RegularTest() { }
-
-    [MyTest]
-    public void RegularTest2() { }
-
-    [MyTest]
-    public void RegularTest3() { }
+    public void RegularTest()
+    {
+        Console.WriteLine("I shouldn't be printed");
+    }
 }

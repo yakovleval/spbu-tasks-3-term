@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 
 namespace MyNUnit;
 
@@ -57,14 +58,15 @@ public class TestClass
 
     private string GenerateSideMethodsFailureMessage(List<(string, TargetInvocationException)> result)
     {
-        string message = "unhandled exceptions occured in side methods:\n";
+        var message = new StringBuilder();
+        message.Append("unhandled exceptions occured in side methods:\n");
         foreach (var (methodName, exception) in result)
         {
-            message += $"{methodName}(): " +
+            message.Append($"{methodName}(): " +
                 $"{exception.InnerException!.GetType().Name}: " +
-                $"{exception.InnerException!.Message}";
+                $"{exception.InnerException!.Message}");
         }
-        return message;
+        return message.ToString();
     }
 
     /// <summary>
@@ -75,12 +77,12 @@ public class TestClass
     /// <returns>result of the test</returns>
     public TestReport RunTest(MethodInfo method, object instance)
     {
-        var attr = method.GetCustomAttribute<MyTestAttribute>()!;
-        if (attr.Ignore is not null)
+        var attribute = method.GetCustomAttribute<MyTestAttribute>()!;
+        if (attribute.Ignore is not null)
         {
             return new TestReport(method.Name,
                 TestResult.IGNORED,
-                attr.Ignore);
+                attribute.Ignore);
         }
 
         var result = RunMethods(_beforeMethods, instance);
@@ -114,14 +116,14 @@ public class TestClass
                 reason);
         }
 
-        if (exceptionType == attr.Expected)
+        if (exceptionType == attribute.Expected)
         {
             return new TestReport(method.Name,
                 TestResult.PASSED,
                 null,
                 watch.ElapsedMilliseconds);
         }
-        else if (attr.Expected is null)
+        else if (attribute.Expected is null)
         {
             return new TestReport(method.Name,
                 TestResult.FAILED,
@@ -132,7 +134,7 @@ public class TestClass
         {
             return new TestReport(method.Name,
                 TestResult.FAILED,
-                $"expected: {attr.Expected}, but was: {exceptionType}",
+                $"expected: {attribute.Expected}, but was: {exceptionType}",
                 watch.ElapsedMilliseconds);
         }
     }

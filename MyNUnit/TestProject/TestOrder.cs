@@ -11,8 +11,6 @@ public class TestOrder
     public static void BeforeClass1()
     {
         ORDER.Enqueue("BeforeClass");
-
-
     }
 
     [BeforeClass]
