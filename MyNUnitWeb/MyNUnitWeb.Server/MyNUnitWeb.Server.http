@@ -1,0 +1,6 @@
+@MyNUnitWeb.Server_HostAddress = http://localhost:5298
+
+GET {{MyNUnitWeb.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
