@@ -8,6 +8,7 @@ namespace MyNUnit;
 public class MyNUnit
 {
     private List<TestClass> _testClasses;
+    private Assembly _testAssembly;
 
     /// <summary>
     /// creates an instance of 'MyNUnit' class
@@ -16,18 +17,31 @@ public class MyNUnit
     /// assemblies with test classes</param>
     public MyNUnit(string path)
     {
-        var directory = Directory
-            .EnumerateFiles(path, "*.dll")
-            .Where(file => !file.EndsWith("MyNUnit.dll"))
-            .ToList();
-        var testAssemblies = directory
-            .Select(Assembly.LoadFrom)
-            .ToList();
-        _testClasses = testAssemblies
-            .SelectMany(a => a.ExportedTypes
+        //var directory = Directory
+        //    .EnumerateFiles(path, "*.dll")
+        //    .Where(file => !file.EndsWith("MyNUnit.dll"))
+        //    .ToList();
+        //var testAssemblies = directory
+        //    .Select(Assembly.LoadFrom)
+        //    .ToList();
+        //_testClasses = testAssemblies
+        //    .SelectMany(a => a.ExportedTypes
+        //                     .Select(type => new TestClass(type))
+        //                     .ToArray())
+        //    .ToList();
+        _testAssembly = Assembly.LoadFrom(path);
+        _testClasses = _testAssembly.ExportedTypes
                              .Select(type => new TestClass(type))
-                             .ToArray())
-            .ToList();
+                             .ToList();
+    }
+
+    public AssemblyReport RunTests()
+    {
+        ClassReport[] result = new ClassReport[_testClasses.Count];
+        Parallel.Invoke(_testClasses
+            .Select((testClass, index) => new Action(() => result[index] = testClass.RunTests()))
+            .ToArray());
+        return new AssemblyReport(_testAssembly.ManifestModule.Name, result);
     }
 
     /// <summary>

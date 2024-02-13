@@ -5,10 +5,6 @@ if (args.Length != 1)
     return;
 }
 var path = args[0];
-if (!Directory.Exists(path))
-{
-    Console.WriteLine("Directory doesn't exist");
-    return;
-}
-var myNUnit = new MyNUnit.MyNUnit(path);
+
+var myNUnit = new MyNUnit.MyNUnit("C:\\Users\\aleksandr\\source\\repos\\spbu-tasks-3-term\\Kek\\Kek\\bin\\Debug\\net8.0\\Kek.dll");
 myNUnit.RunTestsAndPrintResult();

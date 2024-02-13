@@ -82,6 +82,8 @@ public class TestClass
         {
             return new TestReport(method.Name,
                 TestResult.IGNORED,
+                null,
+                null,
                 attribute.Ignore);
         }
 
@@ -91,6 +93,8 @@ public class TestClass
             var reason = GenerateSideMethodsFailureMessage(result);
             return new TestReport(method.Name,
                 TestResult.IGNORED,
+                null,
+                null,
                 reason);
         }
 
@@ -113,6 +117,7 @@ public class TestClass
             var reason = GenerateSideMethodsFailureMessage(result);
             return new TestReport(method.Name,
                 TestResult.IGNORED,
+                null, null,
                 reason);
         }
 
@@ -120,21 +125,18 @@ public class TestClass
         {
             return new TestReport(method.Name,
                 TestResult.PASSED,
+                exceptionType,
+                attribute.Expected,
                 null,
-                watch.ElapsedMilliseconds);
-        }
-        else if (attribute.Expected is null)
-        {
-            return new TestReport(method.Name,
-                TestResult.FAILED,
-                $"unexpected exception: {exceptionType}",
                 watch.ElapsedMilliseconds);
         }
         else
         {
             return new TestReport(method.Name,
                 TestResult.FAILED,
-                $"expected: {attribute.Expected}, but was: {exceptionType}",
+                exceptionType,
+                attribute.Expected,
+                null,
                 watch.ElapsedMilliseconds);
         }
     }
@@ -151,7 +153,7 @@ public class TestClass
         {
             var reason = GenerateSideMethodsFailureMessage(result);
             return new ClassReport(_testClass.Name,
-                ClassResult.IGNORED,
+                ClassResult.FAILED,
                 null,
                 reason);
 
@@ -168,7 +170,7 @@ public class TestClass
         {
             var reason = GenerateSideMethodsFailureMessage(result);
             return new ClassReport(_testClass.Name,
-                ClassResult.IGNORED,
+                ClassResult.FAILED,
                 null,
                 reason);
 
