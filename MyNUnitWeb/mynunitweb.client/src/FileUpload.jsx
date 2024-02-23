@@ -113,7 +113,7 @@ function FileUpload() {
                     <tbody>
                         {history.map(assembly =>
                             <>
-                                <tr key={assembly.assemblyName} data-bs-toggle="collapse" data-bs-target={"#m" + assembly.assemblyId}>
+                                <tr key={assembly.assemblyName} data-bs-toggle="collapse" data-bs-target={"#m" + assembly.assemblyResultId}>
                                     <td>
                                         <button type="button">
                                             {assembly.assemblyName}
@@ -123,9 +123,9 @@ function FileUpload() {
                                     <td>{assembly.failed}</td>
                                     <td>{assembly.ignored}</td>
                                 </tr>
-                                <tr className="collapse" id={"m" + assembly.assemblyId} >
+                                <tr className="collapse" id={"m" + assembly.assemblyResultId} >
                                     <td>
-                                        <div className="collapse" id={"m" + assembly.assemblyId}>
+                                        <div className="collapse" id={"m" + assembly.assemblyResultId}>
                                             <table className="table">
                                                 {assembly.classResults.map(testclass =>
                                                     testclass.reason !== null ?
