@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyNUnitWeb.Server", "MyNUni
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "mynunitweb.client", "mynunitweb.client\mynunitweb.client.esproj", "{FBF7BE81-29C9-4042-A07F-40477368372F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyNUnit", "..\MyNUnit\MyNUnit\MyNUnit.csproj", "{209CD39D-6A0A-4F45-8127-FE03D31BDF93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{FBF7BE81-29C9-4042-A07F-40477368372F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBF7BE81-29C9-4042-A07F-40477368372F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FBF7BE81-29C9-4042-A07F-40477368372F}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{209CD39D-6A0A-4F45-8127-FE03D31BDF93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{209CD39D-6A0A-4F45-8127-FE03D31BDF93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{209CD39D-6A0A-4F45-8127-FE03D31BDF93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{209CD39D-6A0A-4F45-8127-FE03D31BDF93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

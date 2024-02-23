@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\MyNUnit\MyNUnit\MyNUnit.csproj" />
     <ProjectReference Include="..\mynunitweb.client\mynunitweb.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
@@ -31,12 +32,6 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="MyNUnit">
-      <HintPath>..\..\MyNUnit\MyNUnit\bin\Release\net8.0\publish\MyNUnit.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

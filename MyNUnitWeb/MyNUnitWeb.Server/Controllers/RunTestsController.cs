@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using MyNUnit;
 using MyNUnitWeb.Server.Data;
-using System;
-using System.IO;
-using System.Reflection;
 
 namespace MyNUnitWeb.Server.Controllers
 {
@@ -17,19 +13,18 @@ namespace MyNUnitWeb.Server.Controllers
         public RunTestsController(IWebHostEnvironment env, HistoryDbContext context)
         {
             _context = context;
-            //_uploads = env.WebRootPath;
-            _uploads = "C:\\Users\\aleksandr\\source\\repos\\spbu-tasks-3-term\\MyNUnitWeb\\MyNUnitWeb.Server\\wwwroot";
+            _uploads = "..\\..\\..\\wwwroot";
         }
 
         [HttpGet]
         [Route("GetHistory")]
-        public IEnumerable<AssemblyResult>GetHistory()
+        public IEnumerable<AssemblyResult> GetHistory()
         {
             var assemblies = _context.Assemblies.ToList();
             foreach (var assembly in assemblies)
             {
                 var classes = _context.Classes.ToList().FindAll(classResult =>
-            classResult.AssemblyResultId == assembly.AssemblyResultId);
+                    classResult.AssemblyResultId == assembly.AssemblyResultId);
                 foreach (var _class in classes)
                 {
                     var methods = _context.Methods.ToList().FindAll(methodResult =>
@@ -50,14 +45,13 @@ namespace MyNUnitWeb.Server.Controllers
                 if (file.Length > 0)
                 {
                     string filePath = Path.Combine(_uploads, file.FileName);
-                    using (Stream fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        file.CopyTo(fileStream);
-                    }
+                    using var fileStream = new FileStream(filePath, FileMode.Create);
+                    file.CopyTo(fileStream);
                 }
             }
             return Ok();
         }
+
         [HttpGet]
         [Route("GetTestResults")]
         public async Task<IEnumerable<AssemblyResult>> TestResults()
@@ -75,7 +69,6 @@ namespace MyNUnitWeb.Server.Controllers
                 var result = tester.RunTests();
                 var assembly = new AssemblyResult();
                 assembly.Init(result);
-                //assembly.AssemblyId = i;
                 i++;
                 if (assembly.TestsNumber > 0)
                 {
