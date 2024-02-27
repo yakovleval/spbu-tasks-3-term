@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MyNUnit": {
+      "commandName": "Project",
+      "commandLineArgs": "‪C:\\Users\\aleksandr\\source\\repos\\spbu-tasks-3-term\\ClassLibrary1\\ClassLibrary2\\bin\\Release\\net8.0\\ClassLibrary2.dll"
+    }
+  }
+}
