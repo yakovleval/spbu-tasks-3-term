@@ -1,10 +1,12 @@
 import './App.css';
+import AssembliesTable from './AssembliesTable';
 import FileUpload from './FileUpload';
 
-function App() {
+export default function App() {
     return (
-        <FileUpload />
+        <>
+            <FileUpload />
+            <AssembliesTable />
+        </>
     );
 }
-
-export default App;
