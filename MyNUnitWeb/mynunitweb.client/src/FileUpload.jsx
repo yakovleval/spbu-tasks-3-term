@@ -4,9 +4,8 @@ import axios from 'axios';
 import "bootstrap/dist/css/bootstrap.min.css";
 // Bootstrap Bundle JS
 import "bootstrap/dist/js/bootstrap.bundle.min";
-//import AssembliesTable from './AssembliesTable';
 
-function FileUpload({uploadProgress, setUploadProgress}) {
+export default function FileUpload({uploadProgress, setUploadProgress}) {
     const [files, setFiles] = useState([]);
     const [uploading, setUploading] = useState(false)
 
@@ -34,7 +33,6 @@ function FileUpload({uploadProgress, setUploadProgress}) {
                 setUploadProgress(percentCompleted);
             }
         };
-
         axios.post(url, formData, config)
             .then((response) => {
                 console.log(response.data);
@@ -44,7 +42,6 @@ function FileUpload({uploadProgress, setUploadProgress}) {
                 console.error("Error uploading files: ", error);
                 alert(error)
             });
-        setFiles([]);
     }
 
     function uploadButtonContent() {
@@ -64,88 +61,7 @@ function FileUpload({uploadProgress, setUploadProgress}) {
                     <button type="submit">{uploadButtonContent()}</button>
                     <progress value={uploadProgress} max="100"></progress>
                 </form>
-                {/*<form onSubmit={handleRunTestsSubmit}>*/}
-                {/*    <button type="submit">{runTestsButtonContent()}</button>*/}
-                {/*</form>*/}
-                {/*<AssembliesTable testingHistory={this.history} />*/}
-                {/*<table className="table">*/}
-                {/*    <thead>*/}
-                {/*        <tr>*/}
-                {/*            <th scope="col">Assembly name</th>*/}
-                {/*            <th scope="col">Passed</th>*/}
-                {/*            <th scope="col">Failed</th>*/}
-                {/*            <th scope="col">Ignored</th>*/}
-                {/*        </tr>*/}
-                {/*    </thead>*/}
-                {/*    <tbody>*/}
-                {/*        {history.map(assembly =>*/}
-                {/*            <>*/}
-                {/*                <tr key={assembly.assemblyName} data-bs-toggle="collapse" data-bs-target={"#m" + assembly.assemblyResultId}>*/}
-                {/*                    <td>*/}
-                {/*                        <button type="button">*/}
-                {/*                            {assembly.assemblyName}*/}
-                {/*                        </button>*/}
-                {/*                    </td>*/}
-                {/*                    <td>{assembly.passed}</td>*/}
-                {/*                    <td>{assembly.failed}</td>*/}
-                {/*                    <td>{assembly.ignored}</td>*/}
-                {/*                </tr>*/}
-                {/*                <tr className="collapse" id={"m" + assembly.assemblyResultId} >*/}
-                {/*                    <td>*/}
-                {/*                        <div className="collapse" id={"m" + assembly.assemblyResultId}>*/}
-                {/*                            <table className="table">*/}
-                {/*                                {assembly.classResults.map(testclass =>*/}
-                {/*                                    testclass.reason !== null ?*/}
-                {/*                                    `${testclass.className} -- FAILED, reason: ${testclass.reason}` :*/}
-                {/*                                    <>*/}
-                {/*                                        <table className="table">*/}
-                {/*                                            <tr>*/}
-                {/*                                                <th>{testclass.className}</th>*/}
-                {/*                                            </tr>*/}
-                {/*                                            <table className="table">*/}
-                {/*                                                <thead>*/}
-                {/*                                                    <tr>*/}
-                {/*                                                        <th>Method name</th>*/}
-                {/*                                                        <th>Status</th>*/}
-                {/*                                                        <th>Reason</th>*/}
-                {/*                                                        <th>Expected</th>*/}
-                {/*                                                        <th>Was</th>*/}
-                {/*                                                    </tr>*/}
-                {/*                                                </thead>*/}
-                {/*                                                <tbody>*/}
-                {/*                                                    {testclass.methodResults === undefined ? "undefined" : testclass.methodResults.map(method =>*/}
-                {/*                                                        <tr key={"method" + method.met}>*/}
-                {/*                                                            <td>{method.methodName}</td>*/}
-                {/*                                                            <td>{status(method.status)}</td>*/}
-                {/*                                                            <td>{method.reason}</td>*/}
-                {/*                                                            <td>{method.expected}</td>*/}
-                {/*                                                            <td>{method.was}</td>*/}
-                {/*                                                        </tr>*/}
-                {/*                                                    )}*/}
-                {/*                                                </tbody>*/}
-                {/*                                            </table>*/}
-                {/*                                        </table>*/}
-                {/*                                    </>*/}
-                {/*                                )}*/}
-                {/*                            </table>*/}
-                {/*                        </div>*/}
-                {/*                    </td>*/}
-                {/*                </tr>*/}
-                {/*            </>*/}
-                {/*        )}*/}
-                {/*    </tbody>*/}
-                {/*</table>*/}
             </div>
         </>
     );
 }
-
-//function status(status) {
-//    switch (status) {
-//        case 0: return "PASSED";
-//        case 1: return "FAILED";
-//        case 2: return "IGNORED";
-//    }
-//}
-
-export default FileUpload

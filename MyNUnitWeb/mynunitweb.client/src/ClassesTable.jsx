@@ -11,7 +11,11 @@ export default function ClassesTable({ classResults }) {
         <table className="table">
             {classResults.map(testclass =>
                 testclass.reason !== null ?
-                    `${testclass.className} -- FAILED, reason: ${testclass.reason}` :
+                    <>
+                        <tr>
+                            <th>{testclass.className} - FAILED, reason: {testclass.reason}</th>
+                        </tr>:
+                    </>:
                     <>
                         <table className="table">
                             <tr>
@@ -29,7 +33,7 @@ export default function ClassesTable({ classResults }) {
                                 </thead>
                                 <tbody>
                                     {testclass.methodResults === undefined ? "undefined" : testclass.methodResults.map(method =>
-                                        <tr key={method.MethodResultId}>
+                                        <tr key={"" + testclass.classResultId + method.methodResultId}>
                                             <td>{method.methodName}</td>
                                             <td>{status(method.status)}</td>
                                             <td>{method.reason}</td>

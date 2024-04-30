@@ -105,8 +105,7 @@ namespace MyNUnitWeb.Server.Controllers
                     }
                 }
                 await _context.SaveChangesAsync();
-                return Redirect("/GetHistory");
-                //return Ok(assemblies);
+                return Redirect("GetHistory");
             }
             catch (Exception e)
             {

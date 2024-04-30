@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import ClassesTable from './ClassesTable';
 
@@ -23,7 +23,7 @@ export default function AssembliesTable({setUploadProgress}) {
         axios.get(url)
             .then((response) => {
                 console.log(response);
-                setHistory(response);
+                setHistory(response.data);
                 setTesting(false);
             })
             .catch((error) => {
@@ -31,15 +31,17 @@ export default function AssembliesTable({setUploadProgress}) {
             });
     }
 
-    axios.get('https://localhost:7232/runtests/gethistory')
-        .then((response) => {
-            console.log(response);
-            setHistory(response.data);
-            setTesting(false);
-        })
-        .catch((error) => {
-            console.log("Error testing: ", error);
-        });
+    useEffect(() => {
+        axios.get('https://localhost:7232/runtests/gethistory')
+            .then((response) => {
+                console.log(response);
+                setHistory(response.data);
+                setTesting(false);
+            })
+            .catch((error) => {
+                console.log("Error testing: ", error);
+            });
+    }, [])
 
     return (
         <>
@@ -69,14 +71,11 @@ export default function AssembliesTable({setUploadProgress}) {
                                 <td>{assembly.ignored}</td>
                             </tr>
                             <tr className="collapse" id={"m" + assembly.assemblyResultId} >
-                                <div className="collapse" id={"m" + assembly.assemblyResultId}>
-                                    <ClassesTable classResults={assembly.classResults} />
-                                </div>
-                                {/*<td>*/}
-                                {/*    <div className="collapse" id={"m" + assembly.assemblyResultId}>*/}
-                                {/*        <ClassesTable classResults={ assembly.classResults }/>*/}
-                                {/*    </div>*/}
-                                {/*</td>*/}
+                                <td>
+                                    <div className="collapse" id={"m" + assembly.assemblyResultId}>
+                                        <ClassesTable classResults={assembly.classResults} />
+                                    </div>
+                                </td>
                             </tr>
                         </>
                     )}
