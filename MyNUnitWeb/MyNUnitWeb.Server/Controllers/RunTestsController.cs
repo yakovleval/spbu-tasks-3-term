@@ -35,6 +35,7 @@ namespace MyNUnitWeb.Server.Controllers
                     }
                     assembly.ClassResults = classes;
                 }
+                assemblies.Reverse();
                 return Ok(assemblies);
             }
             catch (Exception e)
