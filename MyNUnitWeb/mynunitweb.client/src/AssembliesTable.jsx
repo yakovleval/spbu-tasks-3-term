@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import ClassesTable from './ClassesTable';
 
-export default function AssembliesTable() {
+export default function AssembliesTable({setUploadProgress}) {
     const [history, setHistory] = useState([]);
     const [testing, setTesting] = useState(true)
 
@@ -17,6 +17,7 @@ export default function AssembliesTable() {
 
     async function handleRunTestsSubmit(event) {
         setTesting(true);
+        setUploadProgress(0);
         event.preventDefault();
         const url = 'https://localhost:7232/runtests/GetTestResults';
         axios.get(url)

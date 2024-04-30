@@ -6,9 +6,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 //import AssembliesTable from './AssembliesTable';
 
-function FileUpload() {
+function FileUpload({uploadProgress, setUploadProgress}) {
     const [files, setFiles] = useState([]);
-    const [uploadProgress, setUploadProgress] = useState(0);
     const [uploading, setUploading] = useState(false)
 
     function handleMultipleChange(event) {
@@ -40,11 +39,12 @@ function FileUpload() {
             .then((response) => {
                 console.log(response.data);
                 setUploading(false);
-                //setUploadedFiles(response.data.files);
             })
             .catch((error) => {
                 console.error("Error uploading files: ", error);
+                alert(error)
             });
+        setFiles([]);
     }
 
     function uploadButtonContent() {
