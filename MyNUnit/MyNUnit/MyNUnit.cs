@@ -15,21 +15,9 @@ public class MyNUnit
     /// </summary>
     /// <param name="path">path to a directory which contains 
     /// assemblies with test classes</param>
-    public MyNUnit(string path)
+    public MyNUnit(Assembly assembly)
     {
-        //var directory = Directory
-        //    .EnumerateFiles(path, "*.dll")
-        //    .Where(file => !file.EndsWith("MyNUnit.dll"))
-        //    .ToList();
-        //var testAssemblies = directory
-        //    .Select(Assembly.LoadFrom)
-        //    .ToList();
-        //_testClasses = testAssemblies
-        //    .SelectMany(a => a.ExportedTypes
-        //                     .Select(type => new TestClass(type))
-        //                     .ToArray())
-        //    .ToList();
-        _testAssembly = Assembly.LoadFrom(path);
+        _testAssembly = assembly;
         _testClasses = _testAssembly.ExportedTypes
                              .Select(type => new TestClass(type))
                              .ToList();
@@ -41,7 +29,7 @@ public class MyNUnit
         Parallel.Invoke(_testClasses
             .Select((testClass, index) => new Action(() => result[index] = testClass.RunTests()))
             .ToArray());
-        return new AssemblyReport(_testAssembly.ManifestModule.Name, result);
+        return new AssemblyReport(_testAssembly.ManifestModule.ScopeName, result);
     }
 
     /// <summary>
