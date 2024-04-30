@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using MyNUnitWeb.Server.Data;
-using System.Reflection.Metadata.Ecma335;
 
 namespace MyNUnitWeb.Server.Controllers
 {
@@ -105,7 +104,8 @@ namespace MyNUnitWeb.Server.Controllers
                     }
                 }
                 await _context.SaveChangesAsync();
-                return Ok(assemblies);
+                return Redirect("/GetHistory");
+                //return Ok(assemblies);
             }
             catch (Exception e)
             {

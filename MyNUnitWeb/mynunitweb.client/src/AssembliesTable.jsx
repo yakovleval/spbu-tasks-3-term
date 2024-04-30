@@ -22,7 +22,7 @@ export default function AssembliesTable() {
         axios.get(url)
             .then((response) => {
                 console.log(response);
-                setHistory(response.data.concat(history));
+                setHistory(response);
                 setTesting(false);
             })
             .catch((error) => {
