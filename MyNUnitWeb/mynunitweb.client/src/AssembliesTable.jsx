@@ -68,11 +68,14 @@ export default function AssembliesTable() {
                                 <td>{assembly.ignored}</td>
                             </tr>
                             <tr className="collapse" id={"m" + assembly.assemblyResultId} >
-                                <td>
-                                    <div className="collapse" id={"m" + assembly.assemblyResultId}>
-                                        <ClassesTable classResults={ assembly.classResults }/>
-                                    </div>
-                                </td>
+                                <div className="collapse" id={"m" + assembly.assemblyResultId}>
+                                    <ClassesTable classResults={assembly.classResults} />
+                                </div>
+                                {/*<td>*/}
+                                {/*    <div className="collapse" id={"m" + assembly.assemblyResultId}>*/}
+                                {/*        <ClassesTable classResults={ assembly.classResults }/>*/}
+                                {/*    </div>*/}
+                                {/*</td>*/}
                             </tr>
                         </>
                     )}

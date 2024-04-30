@@ -29,7 +29,7 @@ export default function ClassesTable({ classResults }) {
                                 </thead>
                                 <tbody>
                                     {testclass.methodResults === undefined ? "undefined" : testclass.methodResults.map(method =>
-                                        <tr key={"method" + method.met}>
+                                        <tr key={method.MethodResultId}>
                                             <td>{method.methodName}</td>
                                             <td>{status(method.status)}</td>
                                             <td>{method.reason}</td>
