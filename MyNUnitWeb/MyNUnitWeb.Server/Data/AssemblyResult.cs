@@ -24,8 +24,7 @@ public class AssemblyResult
         AssemblyName = assemblyReport.assemblyName;
         foreach (var classReport in assemblyReport.classReports)
         {
-            var classResult = new ClassResult();
-            classResult.Init(classReport);
+            var classResult = new ClassResult(classReport);
             ClassResults.Add(classResult);
         }
         foreach (var classResult in ClassResults)

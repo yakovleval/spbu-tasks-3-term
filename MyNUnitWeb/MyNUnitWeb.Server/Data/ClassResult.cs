@@ -13,7 +13,12 @@ public class ClassResult
     [JsonIgnore]
     public int AssemblyResultId { get; set; }
 
-    public void Init(ClassReport classReport)
+    public ClassResult()
+    {
+        
+    }
+
+    public ClassResult(ClassReport classReport)
     {
         ClassName = classReport.className;
         Status = classReport.state;
