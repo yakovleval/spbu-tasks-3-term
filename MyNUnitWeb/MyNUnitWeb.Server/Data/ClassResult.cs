@@ -15,7 +15,7 @@ public class ClassResult
 
     public ClassResult()
     {
-        
+
     }
 
     public ClassResult(ClassReport classReport)

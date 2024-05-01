@@ -18,7 +18,7 @@ public class MethodResult
 
     public MethodResult()
     {
-        
+
     }
 
     public MethodResult(TestReport testReport)

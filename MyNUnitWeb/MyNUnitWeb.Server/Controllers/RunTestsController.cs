@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MyNUnitWeb.Server.Data;
-using System.Net.WebSockets;
-using System.Runtime.InteropServices.Marshalling;
-using System.Runtime.Loader;
 
 namespace MyNUnitWeb.Server.Controllers;
 
@@ -104,51 +100,5 @@ public class RunTestsController : ControllerBase
         }
         await _context.SaveChangesAsync();
         return Redirect("GetHistory");
-        //try
-        //{
-        //    var loadContext = new AssemblyLoadContext("DisposableContext", true);
-        //    var assemblies = new List<AssemblyResult>();
-        //    int i = 0;
-        //    foreach (var filePath in _uploads.GetFiles())
-        //    {
-        //        using var fs = new FileStream(filePath.FullName, FileMode.Open, FileAccess.Read);
-        //        var assembly = loadContext.LoadFromStream(fs);
-        //        var tester = new MyNUnit.MyNUnit(_uploads.FullName);
-        //        var assemblyReport = tester.RunTests();
-        //        var assemblyResult = new AssemblyResult();
-        //        assemblyResult.Init(assemblyReport);
-        //        i++;
-        //        if (assemblyResult.TestsNumber > 0)
-        //        {
-        //            var entity = _context.Assemblies.Add(assemblyResult);
-        //            assemblyResult.AssemblyResultId = entity.Entity.AssemblyResultId;
-        //            assemblies.Add(assemblyResult);
-        //            foreach (var classResult in assemblyResult.ClassResults)
-        //            {
-        //                _context.Classes.Add(classResult);
-        //                if (classResult.MethodResults == null)
-        //                    continue;
-        //                foreach (var methodResult in classResult.MethodResults)
-        //                {
-        //                    _context.Methods.Add(methodResult);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    loadContext.Unload();
-        //    await _context.SaveChangesAsync();
-        //    return Redirect("GetHistory");
-        //}
-        //catch (Exception e)
-        //{
-        //    return StatusCode(500, e);
-        //}
-        //finally
-        //{
-        //    foreach (var file in _uploads.GetFiles())
-        //    {
-        //        file.Delete();
-        //    }
-        //}
     }
 }

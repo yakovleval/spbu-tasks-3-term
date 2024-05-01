@@ -16,7 +16,7 @@ public class AssemblyResult
 
     public AssemblyResult()
     {
-        
+
     }
 
     public AssemblyResult(AssemblyReport assemblyReport)
