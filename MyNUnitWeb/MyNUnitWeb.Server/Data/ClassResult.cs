@@ -35,8 +35,8 @@ public class ClassResult
             MethodResults = new();
             foreach (var testReport in classReport.testReports)
             {
-                var methodResult = new MethodResult();
-                methodResult.Init(testReport);
+                var methodResult = new MethodResult(testReport);
+                //methodResult.Init(testReport);
                 MethodResults.Add(methodResult);
             }
         }

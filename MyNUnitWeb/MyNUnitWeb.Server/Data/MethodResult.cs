@@ -5,16 +5,6 @@ namespace MyNUnitWeb.Server.Data;
 
 public class MethodResult
 {
-    public void Init(TestReport testReport)
-    {
-        MethodName = testReport.methodName;
-        Status = testReport.state;
-        Reason = testReport.reason;
-        Expected = testReport.expected?.ToString();
-        Was = testReport.was?.ToString();
-        TimeElapsed = testReport.timeElapsed;
-    }
-
     public int MethodResultId { get; set; }
     public string MethodName { get; set; }
     public TestResult Status { get; set; }
@@ -25,4 +15,19 @@ public class MethodResult
     public long TimeElapsed { get; set; }
     [JsonIgnore]
     public int ClassResultId { get; set; }
+
+    public MethodResult()
+    {
+        
+    }
+
+    public MethodResult(TestReport testReport)
+    {
+        MethodName = testReport.methodName;
+        Status = testReport.state;
+        Reason = testReport.reason;
+        Expected = testReport.expected?.ToString();
+        Was = testReport.was?.ToString();
+        TimeElapsed = testReport.timeElapsed;
+    }
 }
