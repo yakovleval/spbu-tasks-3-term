@@ -141,8 +141,7 @@ public class TestClass
                 null,
                 "'BeforeClass' and 'AfterClass' methods must be static");
         }
-        if (_beforeMethods.Any(m => m.IsStatic) ||
-            _afterMethods.Any(m => m.IsStatic))
+        if (_testMethods.Any(m => m.IsStatic))
         {
             return new ClassReport(_testClass.Name,
                 ClassResult.FAILED,
@@ -160,13 +159,23 @@ public class TestClass
                 reason);
 
         }
+        var ctorInfo = _testClass.GetConstructor(
+                BindingFlags.Instance | BindingFlags.Public, null,
+                CallingConventions.HasThis, new Type[0], null);
+        if (ctorInfo is null)
+        {
+            return new ClassReport(_testClass.Name,
+                ClassResult.FAILED,
+                null,
+                "test class must have parameterless constructor");
+        }
         var instance = Activator.CreateInstance(_testClass);
         if (instance is null)
         {
             return new ClassReport(_testClass.Name,
                 ClassResult.FAILED,
                 null,
-                "can't create test class instance");
+                "failed to create instance of class");
         }
         Parallel.Invoke(_testMethods
             .Select((method, index) => new Action(() =>

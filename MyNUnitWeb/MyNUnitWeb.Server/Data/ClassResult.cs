@@ -36,7 +36,6 @@ public class ClassResult
             foreach (var testReport in classReport.testReports)
             {
                 var methodResult = new MethodResult(testReport);
-                //methodResult.Init(testReport);
                 MethodResults.Add(methodResult);
             }
         }
