@@ -75,57 +75,80 @@ public class RunTestsController : ControllerBase
     [Route("GetTestResults")]
     public async Task<IActionResult> TestResults()
     {
-        try
+        var tester = new MyNUnit.MyNUnit(_uploads.FullName);
+        var assemblyReports = tester.RunTests();
+        var assemblyResults = assemblyReports
+            .Select(report => new AssemblyResult(report))
+            .ToArray();
+        foreach (var assemblyResult in assemblyResults)
         {
-            var loadContext = new AssemblyLoadContext("DisposableContext", true);
-            var assemblies = new List<AssemblyResult>();
-            int i = 0;
-            foreach (var filePath in _uploads.GetFiles())
+            if (assemblyResult.ClassResults.Count > 0)
             {
-                if (filePath.Name.Contains("MyNUnit.dll"))
-                {
+                _context.Assemblies.Add(assemblyResult);
+            }
+            foreach (var classResult in assemblyResult.ClassResults)
+            {
+                _context.Classes.Add(classResult);
+                if (classResult.MethodResults == null)
                     continue;
-                }
-                using var fs = new FileStream(filePath.FullName, FileMode.Open, FileAccess.Read);
-                var assembly = loadContext.LoadFromStream(fs);
-                var tester = new MyNUnit.MyNUnit(assembly);
-                var assemblyReport = tester.RunTests();
-                var assemblyResult = new AssemblyResult();
-                assemblyResult.Init(assemblyReport);
-                i++;
-                if (assemblyResult.TestsNumber > 0)
+                foreach (var methodResult in classResult.MethodResults)
                 {
-                    var entity = _context.Assemblies.Add(assemblyResult);
-                    assemblyResult.AssemblyResultId = entity.Entity.AssemblyResultId;
-                    assemblies.Add(assemblyResult);
-                    foreach (var classResult in assemblyResult.ClassResults)
-                    {
-                        _context.Classes.Add(classResult);
-                        if (classResult.MethodResults == null)
-                            continue;
-                        foreach (var methodResult in classResult.MethodResults)
-                        {
-                            _context.Methods.Add(methodResult);
-                        }
-                    }
+                    _context.Methods.Add(methodResult);
                 }
             }
-            loadContext.Unload();
-            await _context.SaveChangesAsync();
-            return Redirect("GetHistory");
         }
-        catch (Exception e)
+        tester = null;
+        foreach (var file in _uploads.GetFiles())
         {
-            return StatusCode(500, e);
+            file.Delete();
         }
-        finally
-        {
-            //GC.Collect();
-            //GC.WaitForPendingFinalizers();
-            foreach (var file in _uploads.GetFiles())
-            {
-                file.Delete();
-            }
-        }
+        await _context.SaveChangesAsync();
+        return Redirect("GetHistory");
+        //try
+        //{
+        //    var loadContext = new AssemblyLoadContext("DisposableContext", true);
+        //    var assemblies = new List<AssemblyResult>();
+        //    int i = 0;
+        //    foreach (var filePath in _uploads.GetFiles())
+        //    {
+        //        using var fs = new FileStream(filePath.FullName, FileMode.Open, FileAccess.Read);
+        //        var assembly = loadContext.LoadFromStream(fs);
+        //        var tester = new MyNUnit.MyNUnit(_uploads.FullName);
+        //        var assemblyReport = tester.RunTests();
+        //        var assemblyResult = new AssemblyResult();
+        //        assemblyResult.Init(assemblyReport);
+        //        i++;
+        //        if (assemblyResult.TestsNumber > 0)
+        //        {
+        //            var entity = _context.Assemblies.Add(assemblyResult);
+        //            assemblyResult.AssemblyResultId = entity.Entity.AssemblyResultId;
+        //            assemblies.Add(assemblyResult);
+        //            foreach (var classResult in assemblyResult.ClassResults)
+        //            {
+        //                _context.Classes.Add(classResult);
+        //                if (classResult.MethodResults == null)
+        //                    continue;
+        //                foreach (var methodResult in classResult.MethodResults)
+        //                {
+        //                    _context.Methods.Add(methodResult);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    loadContext.Unload();
+        //    await _context.SaveChangesAsync();
+        //    return Redirect("GetHistory");
+        //}
+        //catch (Exception e)
+        //{
+        //    return StatusCode(500, e);
+        //}
+        //finally
+        //{
+        //    foreach (var file in _uploads.GetFiles())
+        //    {
+        //        file.Delete();
+        //    }
+        //}
     }
 }

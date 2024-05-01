@@ -1,47 +1,57 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
+using System.Runtime.Loader;
 
 namespace MyNUnit;
 
 /// <summary>
 /// Class with methods for running tests and printing results
 /// </summary>
-public class MyNUnit
+public class MyNUnit : IDisposable
 {
-    private List<TestClass> _testClasses;
-    private Assembly _testAssembly;
+    private List<TestAssembly> _testAssemblies = new();
+    private AssemblyLoadContext _context;
 
     /// <summary>
     /// creates an instance of 'MyNUnit' class
     /// </summary>
     /// <param name="path">path to a directory which contains 
     /// assemblies with test classes</param>
-    public MyNUnit(Assembly assembly)
+    public MyNUnit(string dirPath)
     {
-        _testAssembly = assembly;
-        _testClasses = _testAssembly.ExportedTypes
-                             .Select(type => new TestClass(type))
-                             .ToList();
+        _context = new AssemblyLoadContext("DisposableContext", true);
+        var dirInfo = new DirectoryInfo(dirPath);
+        foreach (var fileInfo in dirInfo.GetFiles())
+        {
+            if (!fileInfo.Name.Contains(".dll"))
+            {
+                continue;
+            }
+            using var fs = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read);
+            var assembly = _context.LoadFromStream(fs);
+            _testAssemblies.Add(new TestAssembly(assembly));
+        }
     }
 
-    public AssemblyReport RunTests()
+    public void Dispose()
     {
-        ClassReport[] result = new ClassReport[_testClasses.Count];
-        Parallel.Invoke(_testClasses
-            .Select((testClass, index) => new Action(() => result[index] = testClass.RunTests()))
-            .ToArray());
-        return new AssemblyReport(_testAssembly.ManifestModule.ScopeName, result);
+        _context.Unload();
     }
 
-    /// <summary>
-    /// runs all tests in the directory and prints result of them
-    /// </summary>
-    public void RunTestsAndPrintResult()
+    public AssemblyReport[] RunTests()
     {
-        ClassReport[] result = new ClassReport[_testClasses.Count];
-        Parallel.Invoke(_testClasses
-            .Select((testClass, index) => new Action(() => result[index] = testClass.RunTests()))
+        ConcurrentBag<AssemblyReport> assemblyReports = new();
+        Parallel.Invoke(_testAssemblies
+            .Select(testAssembly => new Action(() =>
+            {
+                var assemblyReport = testAssembly.RunTests();
+                if (assemblyReport.classReports.Length > 0)
+                {
+                    assemblyReports.Add(assemblyReport);
+                }
+            }))
             .ToArray());
-        PrintResult(result);
+        return assemblyReports.ToArray();
     }
 
     private void PrintResult(ClassReport[] result)

@@ -40,20 +40,6 @@ public class TestClass
         _beforeMethods = InitArrayOfMethods<BeforeAttribute>(methods);
         _afterMethods = InitArrayOfMethods<AfterAttribute>(methods);
         _testMethods = InitArrayOfMethods<MyTestAttribute>(methods);
-        foreach (var method in _beforeClassMethods)
-        {
-            if (!method.IsStatic)
-            {
-                throw new CustomAttributeFormatException($"{method.Name} must be static");
-            }
-        }
-        foreach (var method in _afterClassMethods)
-        {
-            if (!method.IsStatic)
-            {
-                throw new CustomAttributeFormatException($"{method.Name} must be static");
-            }
-        }
     }
 
     private string GenerateSideMethodsFailureMessage(List<(string, TargetInvocationException)> result)
@@ -147,6 +133,22 @@ public class TestClass
     /// <returns>result of all tests in the test class</returns>
     public ClassReport RunTests()
     {
+        if (_beforeClassMethods.Any(m => !m.IsStatic) ||
+            _afterClassMethods.Any(m => !m.IsStatic))
+        {
+            return new ClassReport(_testClass.Name,
+                ClassResult.FAILED,
+                null,
+                "'BeforeClass' and 'AfterClass' methods must be static");
+        }
+        if (_beforeMethods.Any(m => m.IsStatic) ||
+            _afterMethods.Any(m => m.IsStatic))
+        {
+            return new ClassReport(_testClass.Name,
+                ClassResult.FAILED,
+                null,
+                "'MyTest' methods must be instance");
+        }
         var reports = new TestReport[_testMethods.Length];
         var result = RunMethods(_beforeClassMethods, null);
         if (result.Count > 0)
@@ -158,7 +160,14 @@ public class TestClass
                 reason);
 
         }
-        var instance = Activator.CreateInstance(_testClass)!;
+        var instance = Activator.CreateInstance(_testClass);
+        if (instance is null)
+        {
+            return new ClassReport(_testClass.Name,
+                ClassResult.FAILED,
+                null,
+                "can't create test class instance");
+        }
         Parallel.Invoke(_testMethods
             .Select((method, index) => new Action(() =>
             {

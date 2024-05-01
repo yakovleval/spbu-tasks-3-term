@@ -13,7 +13,13 @@ public class AssemblyResult
     public int Ignored { get; private set; }
     [NotMapped]
     public int TestsNumber => Passed + Failed + Ignored;
-    public void Init(AssemblyReport assemblyReport)
+
+    public AssemblyResult()
+    {
+        
+    }
+
+    public AssemblyResult(AssemblyReport assemblyReport)
     {
         AssemblyName = assemblyReport.assemblyName;
         foreach (var classReport in assemblyReport.classReports)
@@ -26,7 +32,7 @@ public class AssemblyResult
         {
             if (classResult.MethodResults == null)
             {
-                return;
+                continue;
             }
             foreach (var methodResult in classResult.MethodResults)
             {
